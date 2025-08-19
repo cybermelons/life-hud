@@ -1,0 +1,59 @@
+---
+
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Life HUD</title>
+	</head>
+	<body class="min-h-screen bg-gray-900 text-white">
+		<main class="p-8">
+			<h1 class="text-4xl font-bold mb-8">Life HUD - Awareness System</h1>
+			
+			<p class="text-gray-300 mb-8">Track and develop awareness across body, mind, and spirit dimensions.</p>
+			
+			<div class="grid md:grid-cols-3 gap-6">
+				<!-- Body -->
+				<div class="bg-gray-800 rounded-lg p-6">
+					<h2 class="text-2xl font-semibold mb-4 text-green-400">Body</h2>
+					<p class="text-gray-400 mb-4">Physical awareness through senses and actions.</p>
+					<div class="space-y-2">
+						<a href="/body/senses" class="block hover:text-green-300">→ Senses (Jnanendriyas)</a>
+						<a href="/body/actions" class="block hover:text-green-300">→ Actions (Karmendriyas)</a>
+					</div>
+				</div>
+				
+				<!-- Mind -->
+				<div class="bg-gray-800 rounded-lg p-6">
+					<h2 class="text-2xl font-semibold mb-4 text-blue-400">Mind</h2>
+					<p class="text-gray-400 mb-4">Mental awareness through thoughts and feelings.</p>
+					<div class="space-y-2">
+						<a href="/mind/thoughts" class="block hover:text-blue-300">→ Thoughts</a>
+						<a href="/mind/feelings" class="block hover:text-blue-300">→ Feelings</a>
+					</div>
+				</div>
+				
+				<!-- Spirit -->
+				<div class="bg-gray-800 rounded-lg p-6">
+					<h2 class="text-2xl font-semibold mb-4 text-purple-400">Spirit</h2>
+					<p class="text-gray-400 mb-4">Spiritual awareness through connection and purpose.</p>
+					<div class="space-y-2">
+						<a href="/spirit/connection" class="block hover:text-purple-300">→ Connection</a>
+						<a href="/spirit/purpose" class="block hover:text-purple-300">→ Purpose</a>
+						<a href="/spirit/practices" class="block hover:text-purple-300">→ Practices</a>
+					</div>
+				</div>
+			</div>
+			
+			<div class="mt-8">
+				<a href="/hud" class="inline-block bg-yellow-600 hover:bg-yellow-500 px-6 py-3 rounded-lg font-semibold">
+					View HUD Dashboard
+				</a>
+			</div>
+		</main>
+	</body>
+</html>
