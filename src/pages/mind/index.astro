@@ -1,0 +1,178 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Mind - Life HUD" zone="mind">
+	<div class="max-w-4xl mx-auto">
+		<!-- Header -->
+		<div class="mb-8">
+			<h1 class="text-4xl font-bold text-blue-400 mb-2">Mind Timeline</h1>
+			<p class="text-gray-300">Your stream of consciousness - thoughts, feelings, and observations</p>
+			<p> # Mind overview and cognitive health
+
+TODO: this is best tracked/express as a timeline. like tracking your thoughts/feelings throughout the day
+			</p>
+
+		</div>
+
+		<!-- Quick Stats -->
+		<div class="grid grid-cols-4 gap-4 mb-8">
+			<div class="bg-black/30 rounded-lg p-3 border border-blue-600/30">
+				<div class="text-xl font-bold text-blue-400">2</div>
+				<div class="text-xs text-gray-400">NUTs Today</div>
+			</div>
+			<div class="bg-black/30 rounded-lg p-3 border border-blue-600/30">
+				<div class="text-xl font-bold text-blue-400">75%</div>
+				<div class="text-xs text-gray-400">Zone Health</div>
+			</div>
+			<div class="bg-black/30 rounded-lg p-3 border border-blue-600/30">
+				<div class="text-xl font-bold text-blue-400">😰</div>
+				<div class="text-xs text-gray-400">Last Feeling</div>
+			</div>
+			<div class="bg-black/30 rounded-lg p-3 border border-blue-600/30">
+				<div class="text-xl font-bold text-blue-400">💡</div>
+				<div class="text-xs text-gray-400">Pattern Found</div>
+			</div>
+		</div>
+
+		<!-- Chat-style Timeline -->
+		<div class="bg-gradient-to-br from-blue-900/20 to-blue-800/10 rounded-lg border border-blue-600/30">
+			<!-- Chat Header -->
+			<div class="bg-black/30 p-4 border-b border-blue-600/30">
+				<div class="flex items-center justify-between">
+					<h2 class="text-lg font-semibold text-blue-400">Mind Stream</h2>
+					<div class="flex gap-2">
+						<button class="text-xs bg-blue-900/50 hover:bg-blue-800/50 px-3 py-1 rounded transition">All</button>
+						<button class="text-xs bg-black/30 hover:bg-blue-900/50 px-3 py-1 rounded transition">Thoughts</button>
+						<button class="text-xs bg-black/30 hover:bg-blue-900/50 px-3 py-1 rounded transition">Feelings</button>
+					</div>
+				</div>
+			</div>
+
+			<!-- Chat Messages -->
+			<div class="p-4 space-y-4 max-h-[600px] overflow-y-auto">
+				<!-- Older messages fade -->
+				<div class="opacity-60">
+					<div class="text-xs text-gray-500 text-center mb-2">2 hours ago</div>
+				</div>
+
+				<!-- Note Message -->
+				<div class="flex items-start gap-3">
+					<div class="w-8 h-8 bg-blue-800 rounded-full flex items-center justify-center text-sm">📝</div>
+					<div class="flex-1">
+						<div class="bg-black/30 rounded-lg rounded-tl-none p-3 border border-blue-700/30">
+							<div class="text-xs text-blue-400 mb-1">Note • Observation</div>
+							<p class="text-gray-300">Interesting pattern: I always feel creative after coffee</p>
+							<div class="flex items-center gap-2 mt-2">
+								<span class="text-xs bg-blue-900/50 px-2 py-1 rounded">#observation</span>
+								<span class="text-xs bg-blue-900/50 px-2 py-1 rounded">#pattern</span>
+							</div>
+						</div>
+						<div class="flex gap-2 mt-1 ml-2">
+							<button class="text-sm opacity-60 hover:opacity-100">☕</button>
+							<button class="text-sm opacity-60 hover:opacity-100">💡</button>
+							<button class="text-sm opacity-60 hover:opacity-100">👍</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Time separator -->
+				<div class="text-xs text-gray-500 text-center">10 minutes ago</div>
+
+				<!-- Urge Message -->
+				<div class="flex items-start gap-3">
+					<div class="w-8 h-8 bg-blue-800 rounded-full flex items-center justify-center text-sm">💭</div>
+					<div class="flex-1">
+						<div class="bg-black/30 rounded-lg rounded-tl-none p-3 border border-blue-700/30">
+							<div class="text-xs text-blue-400 mb-1">Urge • Feeling</div>
+							<p class="text-gray-300">Feeling anxious about tomorrow's meeting</p>
+							<div class="flex items-center gap-2 mt-2">
+								<span class="text-xs bg-blue-900/50 px-2 py-1 rounded">#anxiety</span>
+								<span class="text-xs bg-blue-900/50 px-2 py-1 rounded">#feeling</span>
+							</div>
+						</div>
+						<div class="flex gap-2 mt-1 ml-2">
+							<button class="text-sm opacity-60 hover:opacity-100">😰</button>
+							<button class="text-sm opacity-60 hover:opacity-100">🤗</button>
+							<button class="text-sm opacity-60 hover:opacity-100">💪</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- System Message - Pattern Detection -->
+				<div class="flex justify-center">
+					<div class="bg-blue-900/20 rounded-lg px-4 py-2 text-xs text-blue-400 border border-blue-700/30">
+						🔍 Pattern detected: Anxiety often appears before meetings
+					</div>
+				</div>
+
+				<!-- Now indicator -->
+				<div class="text-xs text-gray-500 text-center">Now</div>
+			</div>
+
+			<!-- Chat Input (Visual only for now) -->
+			<div class="border-t border-blue-600/30 p-4 bg-black/30">
+				<div class="flex items-center gap-3">
+					<select class="bg-black/30 border border-blue-600/30 rounded px-3 py-2 text-sm">
+						<option>💭 Thought</option>
+						<option>❤️ Feeling</option>
+						<option>👁️ Observation</option>
+					</select>
+					<input 
+						type="text" 
+						placeholder="What's on your mind?" 
+						class="flex-1 bg-black/30 border border-blue-600/30 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-400 transition"
+					/>
+					<button class="bg-blue-700 hover:bg-blue-600 px-4 py-2 rounded-lg transition">Send</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Mind Subzones -->
+		<div class="mt-8 grid md:grid-cols-2 gap-4">
+			<div class="bg-black/30 rounded-lg p-4 border border-blue-600/30">
+				<h3 class="text-lg font-semibold text-blue-400 mb-3">💭 Thought Zones</h3>
+				<div class="space-y-2">
+					<a href="/mind/thoughts/observations" class="block p-2 bg-black/20 rounded hover:bg-blue-900/20 transition">
+						<span>👁️ Observations</span>
+						<span class="text-xs text-gray-400 ml-2">(1 NUT)</span>
+					</a>
+					<a href="/mind/thoughts/analysis" class="block p-2 bg-black/20 rounded hover:bg-blue-900/20 transition opacity-50">
+						<span>🔍 Analysis</span>
+						<span class="text-xs text-gray-500 ml-2">(locked)</span>
+					</a>
+					<a href="/mind/thoughts/planning" class="block p-2 bg-black/20 rounded hover:bg-blue-900/20 transition opacity-50">
+						<span>📋 Planning</span>
+						<span class="text-xs text-gray-500 ml-2">(locked)</span>
+					</a>
+					<a href="/mind/thoughts/imagination" class="block p-2 bg-black/20 rounded hover:bg-blue-900/20 transition opacity-50">
+						<span>✨ Imagination</span>
+						<span class="text-xs text-gray-500 ml-2">(locked)</span>
+					</a>
+					<a href="/mind/thoughts/memories" class="block p-2 bg-black/20 rounded hover:bg-blue-900/20 transition opacity-50">
+						<span>📚 Memories</span>
+						<span class="text-xs text-gray-500 ml-2">(locked)</span>
+					</a>
+				</div>
+			</div>
+
+			<div class="bg-black/30 rounded-lg p-4 border border-blue-600/30">
+				<h3 class="text-lg font-semibold text-blue-400 mb-3">❤️ Feeling Zones</h3>
+				<div class="space-y-2">
+					<a href="/mind/feelings/primary" class="block p-2 bg-black/20 rounded hover:bg-blue-900/20 transition">
+						<span>🎭 Primary Emotions</span>
+						<span class="text-xs text-gray-400 ml-2">(1 NUT)</span>
+					</a>
+					<a href="/mind/feelings/complex" class="block p-2 bg-black/20 rounded hover:bg-blue-900/20 transition opacity-50">
+						<span>🌈 Complex Emotions</span>
+						<span class="text-xs text-gray-500 ml-2">(locked)</span>
+					</a>
+					<a href="/mind/feelings/sensations" class="block p-2 bg-black/20 rounded hover:bg-blue-900/20 transition opacity-50">
+						<span>⚡ Body Sensations</span>
+						<span class="text-xs text-gray-500 ml-2">(locked)</span>
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</Layout>

@@ -46,7 +46,32 @@ Location: Stored in /body/actions/muscles/bicep
 - **Requirements**: Some zones need prerequisites (e.g., log 10 body NUTs to unlock deeper body zones)
 - **Achievements**: Unlock special zones through consistent practice
 
-## Guild System (Custom Tag Trees)
+#### Example Unlock Requirements
+
+**Early Unlocks (Tutorial Flow):**
+- Body/Senses → Unlocked from start
+- Body/Actions → Unlocked from start  
+- Mind/Thoughts → Unlocked from start
+- Mind/Feelings → Unlock after 3 NUTs
+
+**Mid-Game Unlocks:**
+- Body/Senses/Taste → Log 1 meal or drink
+- Body/Actions/Muscles → Log 1 workout or physical task
+- Mind/Thoughts/Observations → Log 5 notes
+- Mind/Feelings/Complex → Experience 3 different primary emotions
+
+**Late-Game Unlocks:**
+- Spirit Kingdom → 10 total NUTs OR 7-day streak OR complete onboarding
+- Body/Actions/Reproduction → Age gate + 20 body NUTs
+- Mind/Thoughts/Memories → 10 notes + identify 1 pattern
+- Spirit/Purpose → Complete self-reflection quest
+
+**Special Unlocks:**
+- Secret zones via easter eggs
+- Guild-specific zones when joining a guild
+- Seasonal zones during events
+
+## Guild System (Life Role Encapsulation)
 
 ### Spirit Layer Functions
 The `/spirit/` directory becomes the meta-game layer:
@@ -72,8 +97,16 @@ The `/spirit/` directory becomes the meta-game layer:
    - Personal stat weights
    - Progress metrics
 
+### Guild Concept
+A guild represents a cohesive life role or identity that encapsulates:
+1. **Stat Tree**: Hierarchical tags tracking attributes/skills relevant to that role
+2. **Rituals**: Recurring tasks/practices that maintain and develop that role
+3. **Campaigns**: Time tracking for activities related to that role
+
+This aligns with Vedantic/Samkhya yogic philosophy - each guild is like a dharma or life path we embody.
+
 ### Guild Establishment
-Guilds are custom tag hierarchies players create or clone:
+Guilds are life roles players create or clone:
 
 #### Guild Types (Examples)
 1. **Warrior Guild**
@@ -111,6 +144,100 @@ interface Guild {
 // - Share guilds with others
 // - Multi-class (belong to multiple guilds)
 ```
+
+## Kingdom Navigation Design
+
+### Three Kingdoms Structure (from Lilaya lore)
+Based on the yogic philosophy layers from the Samsara kingdom:
+
+1. **Outer Kingdom** (`/body`) - Physical interface with world
+   - Represents action and sensory experience (Tamas/stability)
+   - Where orders are carried out and resources gathered
+   - Home to farmers, soldiers, laborers
+
+2. **Middle Kingdom** (`/mind`) - Thoughts and feelings  
+   - Represents thought and feeling processes (Rajas/energy)
+   - Where decisions are implemented through systems
+   - Home to merchants, craftspeople, administrators
+
+3. **Inner Kingdom** (`/spirit`) - Pure awareness [LOCKED]
+   - Center of awareness and decision-making (Sattva/clarity)
+   - Where policy and high-level decisions are made
+   - Home to royalty, scholars, spiritual leaders
+
+### Navigation Philosophy
+- **Simple page-to-page movement** like Persona or dating sims
+- Each page is a **location in the kingdom** you visit
+- **Index page = Kingdom Gates/Overview** - Where you choose which kingdom to enter
+- **Breadcrumbs = Your path** through the palace
+- **/sitemap** = Full development map (moved from index)
+
+### Game Loop
+1. **Start at Kingdom Gates** (index) - See three kingdoms' health/activity
+2. **Enter a Kingdom** - Navigate to /body, /mind, or /spirit
+3. **Explore Locations** - Each subpage is a room/area to visit
+4. **Capture NUTs** - Using expandable journal/inventory panel
+5. **Build Experience** - NUTs get stored in current location
+6. **Unlock Deeper Areas** - Through consistent practice
+
+### Exploration & Progression Design (Pokemon-inspired)
+
+#### Visible but Blocked
+Like Pokemon's Indigo Plateau or sleeping Snorlax, players can SEE locked areas but need to meet requirements:
+
+- **Spirit Kingdom** visible from start but requires "10 NUTs" (like needing 8 badges)
+- **Body/Actions/Reproduction** visible but needs "maturity level" or specific unlock
+- **Mind/Thoughts/Memories** visible but needs "5 observation NUTs" first
+- Each locked zone shows:
+  - What it contains (preview/description)
+  - Why it's locked (requirement)
+  - Progress toward unlock (3/10 NUTs)
+
+#### Non-Linear Progression
+Unlike Pokemon's strict gym order, multiple paths available:
+
+- Can start with Body OR Mind exploration
+- Within Body, can focus on Senses OR Actions
+- Some zones have multiple unlock paths:
+  - Spirit unlocks via: 10 total NUTs OR complete a 7-day streak OR finish tutorial quest
+  - Advanced zones unlock via: quantity (10 NUTs) OR quality (identify 3 patterns) OR time (3 days active)
+
+#### Mechanical Engagement Creates Progress
+Progression comes from using the system, not grinding:
+
+- **Logging NUTs** = Experience points
+- **Identifying patterns** = Skill development  
+- **Maintaining streaks** = Discipline training
+- **Exploring zones** = Map discovery
+- **Reacting to NUTs** = Emotional intelligence
+- **Tagging correctly** = Organizational mastery
+
+#### Teasing Future Content
+Show glimpses of what's coming:
+
+- Locked zones display grayed-out preview: "🔒 Inner Sanctum - Where purpose aligns with action"
+- Hovering shows requirements: "Unlock by reaching Middle Kingdom first"
+- NPCs/Hints reference locked areas: "I heard the Spirit Temple has powerful meditation techniques..."
+- Partial visibility: Can see zone name and icon but not enter
+
+### NUT Capture Panel (Inventory System)
+Expandable panel like Toggl Track that slides up from bottom:
+
+**Collapsed State:**
+- Minimal bar with quick capture input
+- Type selector (Note/Urge/Task)
+- Expand button
+
+**Expanded State (MTG Card-like):**
+- Full capture form with rich fields
+- Time adjustment
+- Tag selection (based on unlocked zones)
+- Zone assignment (where to store the NUT)
+- Recurrence settings
+- Quick reactions/mood
+- Preview of how NUT will appear
+
+Always accessible while navigating the kingdom, like carrying a journal.
 
 ## Implementation Architecture
 
@@ -150,31 +277,41 @@ interface PlayerProfile {
 }
 ```
 
-### Page Updates
+### Page Structure
 
-1. **Zone Pages** (`/body/*/`, `/mind/*/`)
-   - Add NUT input form specific to that zone
+1. **Index Page** (`/`) - Kingdom Gates
+   - Three kingdoms overview (Outer/Middle/Inner)
+   - Kingdom health indicators
+   - Recent activity summary
+   - Entry points to each kingdom
+   - Quick link to full sitemap
+
+2. **Kingdom Pages** (`/body`, `/mind`, `/spirit`)
+   - Kingdom description and current state
+   - Child locations as navigation options
+   - Zone-specific NUTs display
+   - Health/corruption meters
+   - Breadcrumb navigation
+
+3. **Zone Pages** (`/body/*/`, `/mind/*/`)
+   - Location-specific theming and description
+   - NUT input form specific to that zone
    - Display NUTs tagged to this zone
    - Show zone health/corruption
    - Unlock requirements if not discovered
+   - Navigation to child zones
 
-2. **Index Page** (`/`)
-   - Mind palace overview map
-   - Quick NUT input with tag selector
-   - Recently active zones highlighted
-   - Discovery progress indicator
+4. **Sitemap** (`/sitemap`) - Development View
+   - Complete hierarchical view of all zones
+   - Quick access to any location
+   - Debug information and stats
+   - Locked/unlocked status overview
 
-3. **Spirit Pages** (`/spirit/*/`)
+5. **Spirit Pages** (`/spirit/*/`) [LOCKED]
    - Guild management interface
    - Value/goal alignment tools
    - Stats configuration
    - Sadhana scheduling
-
-4. **HUD Dashboard** (`/hud`)
-   - Real-time zone health
-   - Active guild buffs/effects
-   - NUT stream with tags
-   - Pattern detection alerts
 
 ### New Features
 
