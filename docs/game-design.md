@@ -239,6 +239,57 @@ Expandable panel like Toggl Track that slides up from bottom:
 
 Always accessible while navigating the kingdom, like carrying a journal.
 
+### Core NUT Offering Gameplay Loop
+
+1. **Capture Phase**
+   - Log NUT via always-present NUT bar
+   - NUT enters inventory (unassigned)
+   - Can accumulate multiple NUTs before offering
+
+2. **Exploration Phase**
+   - Navigate kingdom zones
+   - Each zone has different "appetite" for NUT types
+   - Visual indicators show zone health/hunger
+
+3. **Notification Phase**
+   - Zones recognize compatible NUTs in inventory
+   - Display notification: "The Training Grounds sense your physical experience"
+   - Creates engagement opportunity
+
+4. **Dialog Phase**
+   - Simple dialog with zone entity/guardian
+   - Entity explains their need/desire for the NUT
+   - Lore-building about why this NUT belongs here
+
+5. **Offering Phase**
+   - Player chooses to offer NUT or keep it
+   - Offering animation/ritual
+   - NUT transforms from inventory item to zone resource
+
+6. **Storage Phase**
+   - NUT permanently stored in zone
+   - Zone health increases
+   - Relationship progress
+   - Possible unlocks or rewards
+
+### Totem Formation (Manual Process)
+
+**No Automatic Pattern Recognition** - Player has full control:
+
+1. **Collection**: Gather multiple related NUTs in inventory
+2. **Selection**: Manually choose which NUTs to chain
+3. **Intention**: Define what the totem represents
+4. **Ritual**: Use discovered sealing components
+5. **Placement**: Choose where totem lives
+6. **Maintenance**: Regular practice keeps totem active
+
+Example:
+- Player collects: "went to gym", "felt strong", "leg day done"
+- Manually chains them together
+- Names it: "Strength Training Totem"
+- Places in /body/actions/muscles
+- Must log workout NUTs weekly to maintain
+
 ## Implementation Architecture
 
 ### Data Structure
@@ -341,10 +392,35 @@ interface PlayerProfile {
 
 ## Progression Flow
 
-1. **Early Game**: Basic NUT logging, discover body/mind zones
-2. **Mid Game**: Unlock specialized zones, identify patterns, manage corruption
-3. **Late Game**: Create guilds, optimize tag trees, achieve Emperor status
-4. **Meta Game**: Share guilds, compete in challenges, teach others
+### Early Game - Basic NUTting
+- Player explores kingdom with NUT bar
+- Captures NUTs throughout the day (Twitter-style quick logging)
+- Offers NUTs to zones through dialog interactions
+- Builds relationships with zones
+- Unlocks new areas through consistent engagement
+
+### Mid Game - Kama Detection (Silph Scope Moment)
+- Complete "The Sight Beyond" quest to unlock Kama vision
+- Can now identify corruption/kama in captured NUTs
+- Corrupted NUTs appear with visual indicators (red/purple glow)
+- Must decide whether to offer tainted NUTs or purify them first
+- Adds risk/reward to NUT offerings
+
+### Late Game - Totem Creation
+- Discover sealing ritual components scattered across kingdom
+- Each kingdom holds ritual knowledge:
+  - Body: "Form" component (physical manifestation)
+  - Mind: "Intent" component (purpose and meaning)
+  - Spirit: "Binding" component (permanence)
+- Player manually chains NUTs together (no AI pattern recognition)
+- Creates totems that represent commitments/habits
+- Places totems in zones for permanent buffs
+- Must maintain totems through regular practice or they decay
+
+### Meta Game
+- Share custom guilds and totems with other players
+- Compete in challenges
+- Teach others your discovered rituals
 
 ## Key Innovations
 

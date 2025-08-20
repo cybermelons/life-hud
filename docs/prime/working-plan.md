@@ -50,15 +50,41 @@ architecture is to use supabase as db, have a pure-functional game engine for de
 - [ ] Style with appropriate zone coloring (green/blue/purple)
 - [ ] Add navigation breadcrumbs component
 
-### Phase 3: NUT Capture System
+### Phase 3: NUT Capture System & Core Gameplay Loop
+
+#### NUT Bar Implementation (No Inference - Manual Control)
 - [ ] Create NUT input component -> NUT Bar. Like a text input for imessage or signal chat app.
-  - available all the time, like in toggl.
-- [ ] Add content input field with auto-expanding textarea
-- [ ] Implement timestamp auto-capture
-- [ ] Create tag selector based on unlocked zones
-- [ ] Add zone association multi-select
-- [ ] Implement Quick Capture Widget for index page
-- [ ] ~~Create zone-specific input templates~~ each moduleis the template, so just keep it as WIP page. (locked)
+  - Simple text input field
+  - Three manual type buttons: [Note] [Urge] [Task]
+  - User picks type explicitly (no detection/inference)
+  - Enter to save to inventory
+  - Clear field after capture
+  - Available all the time, like in toggl
+- [ ] Add localStorage persistence via @nanostores/persistent
+- [ ] Create confirmation toast system for feedback
+- [ ] NO auto-tagging, NO inference, NO suggestions
+
+#### Inventory System (Unassigned NUTs)
+- [ ] Create inventory panel for captured but unassigned NUTs
+- [ ] Show list: type icon, content, timestamp
+- [ ] Manual action buttons: [Assign to Zone] [Delete]
+- [ ] Click "Assign" shows flat list of all zones
+- [ ] User picks zone manually - NUT moves there
+- [ ] No pattern detection, no suggestions
+
+#### Core Gameplay Loop: NUT Offering System
+- [ ] **Capture Phase**: Log NUT via NUT Bar (unassigned/inventory)
+- [ ] **Navigation Phase**: Visit locations in kingdom
+- [ ] **Notification Phase**: Zone NPCs/entities request attention
+- [ ] **Dialog Phase**: Simple dialog interaction
+- [ ] **Offering Phase**: Offer NUT to location/NPC
+- [ ] **Storage Phase**: NUT gets stored in that zone permanently
+
+This creates the reality bridge where:
+- Player logs real thoughts/feelings/tasks
+- These become resources in the game world
+- NPCs/zones "consume" these NUTs as offerings
+- Building relationships and unlocking content
 
 ## Technical Considerations
 
