@@ -53,7 +53,8 @@ but may select only a few to actively work on.
 ### WIP: Core Guild Types
 
 these are tentative guild types. possibly used to determine movesets/stats/equips.
-the other optionis to do gunas-affinity (see gunas docs).
+the other option instead is to do gunas-affinity (see gunas docs) as guild types.
+Or maybe, these are the archetypes. then the gunas affinity is an individual metric for each guild.
 
 **Kshatriya Campaign** (Warrior/Protector)
 - Primary Stats: Discipline, Courage, Strength
@@ -87,71 +88,139 @@ the other optionis to do gunas-affinity (see gunas docs).
 4. **Role Switching**: Can pause one dharma to focus on another
 5. **Multi-Classing**: Advanced players can run parallel campaigns
 
-## Tentative: NPC Design as Consciousness Aspects
+## Vedic Classifications of Kama (Desire Types)
 
-Possible ideas. unused at the moment.
+The kingdom processes different types of desires according to Vedic classifications:
 
-NPCs represent aspects of consciousness that guide, challenge, and teach:
+### Primary Kama Types
 
-### Body Kingdom NPCs
+**1. Vishaya Kama** (Sensory Desires)
+- Entry point: `/body/senses/*`
+- Types: Touch, Taste, Sight, Sound, Smell
+- Example: "Want chocolate" enters through `/body/senses/taste`
 
-**The Hunger**
-- Appears when: Body/nutrition NUTs are imbalanced
-- Teaching: Moderation through feast/famine cycles
-- Offerings accepted: Food logs, fasting records
-- Rewards: Appetite regulation insights
+**2. Bhoga Kama** (Pleasure/Enjoyment)
+- Lives in: `/mind/feelings/pleasure`
+- Seeking comfort, avoiding discomfort
+- Example: "Don't want to exercise" 
 
-**The Athlete**
-- Appears when: Consistent physical practice detected
-- Teaching: Progressive overload and recovery
-- Offerings accepted: Workout logs, rest day records
-- Rewards: Strength progression totems
+**3. Aishvarya Kama** (Power/Control)
+- Lives in: `/mind/thoughts/control`
+- Desire to dominate, control outcomes
+- Example: "Need everyone to do it my way"
 
-**The Healer**
-- Appears when: Body distress NUTs accumulate
-- Teaching: Body wisdom and healing
-- Offerings accepted: Pain logs, recovery practices
-- Rewards: Healing technique unlocks
+**4. Kirti Kama** (Fame/Recognition)
+- Lives in: `/mind/feelings/self-worth`
+- Validation seeking, praise addiction
+- Example: "Need more followers"
 
-### Mind Kingdom NPCs
+**5. Iccha/Trishna** (Craving/Thirst)
+- Lives in: `/mind/feelings/craving`
+- The endless wanting more
+- Example: "Just one more episode/purchase/drink"
 
-**The Doubter**
-- Appears when: Conflicting thought patterns detected
-- Teaching: Questions assumptions, forces clarity
-- Offerings accepted: Contradiction logs, resolution attempts
-- Rewards: Critical thinking totems
+## Kingdom as Living Mind Map
 
-**The Dreamer**
-- Appears when: Creative stagnation detected
-- Teaching: Lateral thinking and imagination
-- Offerings accepted: Dream logs, creative attempts
-- Rewards: Innovation zone unlocks
+The kingdom IS the mind - zones are not just storage but active processing centers:
 
-**The Analyst**
-- Appears when: Cognitive distortions accumulate
-- Teaching: CBT techniques and pattern recognition
-- Offerings accepted: Thought records, reframes
-- Rewards: Mental clarity totems
+### NUT Flow Through Consciousness
 
-### Spirit Kingdom NPCs
+```
+OUTER WORLD → SENSES → MIND → PATTERN FORMATION
 
-**The Witness** (Sakshi)
-- Appears when: Spirit kingdom unlocked
-- Teaching: Non-judgmental observation
-- Offerings accepted: Awareness logs, meditation records
-- Rewards: Equanimity bonuses
+1. Experience happens in outer world
+   ↓
+2. Log experience, player tag the eyes (sight).
+   Example: See coworker's promotion → `/body/senses/sight`
+   ↓
+3. Log feeling, is linked to experience. Mark as klesha.
+   Jealousy arises → `/mind/feelings/jealousy`
+   ↓
+4. Log consequent thought, link together. Is consequent of klesha, thus tainted.
+   Jealousy -> "I'm not good enough"
+   ↓
+5. Resolution:
+   - Festers (creates corruption in that zone, stunted in-game stat growth )
+   - Gets investigated & transformed
+   - Becomes part of a totem (wisdom monument)
+```
 
-**The Guide** (Guru)
-- Appears when: Moral dilemmas arise
-- Teaching: Dharmic decision making
-- Offerings accepted: Ethical struggle logs
-- Rewards: Wisdom transmissions
+### Zones as Response Libraries
 
-**The Child** (Bala)
-- Appears when: Life becomes too serious
-- Teaching: Play, wonder, beginner's mind
-- Offerings accepted: Joy logs, play records
-- Rewards: Creativity unlocks
+Each zone contains your personal history and solutions:
+
+**Example: `/mind/feelings/anger` zone contains:**
+- Past anger NUTs you've logged
+- Successful transformations you've done (totem)
+- Failed reactions that increased suffering
+- The "anger management totem" once mastered
+
+When visiting a zone, you see:
+- Your pattern history
+- What worked before
+- What made things worse
+- Current zone health (corruption level)
+
+## Totem Formation Process
+
+Totems are crystallized wisdom from successful pattern transformation:
+
+### Stage 1: Pattern Recognition in Zone
+
+
+Klesha is identified and targeted.
+Pick a single klesha to resolve.
+
+```
+/mind/feelings/jealousy accumulates:
+- 10 jealousy urges
+- 3 marked as kleshas
+- 2 successful transformations logged
+```
+
+### Stage 2: Samskara Identification
+
+Player creates the samskara chain by identifying a new NUT sequence.
+```
+Player connects the dots:
+"When I feel jealous → I usually compare myself → Makes me miserable"
+"When I feel jealous → I practice mudita → I feel connected"
+```
+
+### Stage 3: Ritual Creation
+
+With the samskara formed, a totem is created.
+```
+Create Totem: "Mudita Practice"
+- Trigger: Jealousy (intensity 5+)
+- Response: Celebrate their success
+- Storage: Ready to place at guild
+```
+
+### Stage 4: Guild Assignment
+```
+Place totem at: Scholar Guild
+- Guild gains: +Wisdom when totem activated
+- Player gains: Quick reference from jealousy
+- Maintenance: Must practice mudita weekly
+```
+
+## Living Kingdom Architecture
+
+**Body Kingdom** (Outer Ring - Tamas)
+- `/body/senses/*` - Where experiences enter from world
+- `/body/actions/*` - Where responses manifest physically
+- NUTs here are raw, unprocessed experiences
+
+**Mind Kingdom** (Processing Layer - Rajas)
+- `/mind/feelings/*` - Emotional reactions to experiences
+- `/mind/thoughts/*` - Mental patterns and stories
+- NUTs here show patterns, can be investigated for roots
+
+**Spirit Kingdom** (Wisdom Layer - Sattva)
+- `/spirit/practices/*` - Established rituals (totems live here)
+- `/spirit/purpose/*` - Life goals that guide responses
+- `/spirit/connection/*` - Relationships affected by patterns
 
 ## The Sacred Game Loop
 
@@ -167,6 +236,7 @@ NPCs represent aspects of consciousness that guide, challenge, and teach:
 
 ### 3. Vairagya Phase (Detachment)
 - Practice non-attachment by offering NUTs to zones
+- See that NUTs are in-world, you are not them.
 - Let go of outcomes
 - Trust the process
 
