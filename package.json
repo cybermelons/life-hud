@@ -11,10 +11,14 @@
   "dependencies": {
     "@astrojs/cloudflare": "^12.6.4",
     "@nanostores/persistent": "^1.1.0",
+    "@supabase/supabase-js": "^2.56.0",
     "@tailwindcss/postcss": "^4.1.12",
     "@tailwindcss/vite": "^4.1.12",
     "astro": "^5.13.2",
     "nanostores": "^1.0.1",
     "tailwindcss": "^4.1.12"
+  },
+  "devDependencies": {
+    "supabase": "^2.34.3"
   }
 }
