@@ -50,19 +50,64 @@ architecture is to use supabase as db, have a pure-functional game engine for de
 - [ ] Style with appropriate zone coloring (green/blue/purple)
 - [ ] Add navigation breadcrumbs component
 
-### Phase 3: NUT Capture System & Core Gameplay Loop
+### Phase 3: MVP Routes & Pages
 
-#### NUT Bar Implementation (No Inference - Manual Control)
-- [ ] Create NUT input component -> NUT Bar. Like a text input for imessage or signal chat app.
-  - Simple text input field
-  - Three manual type buttons: [Note] [Urge] [Task]
-  - User picks type explicitly (no detection/inference)
-  - Enter to save to inventory
-  - Clear field after capture
-  - Available all the time, like in toggl
-- [ ] Add localStorage persistence via @nanostores/persistent
-- [ ] Create confirmation toast system for feedback
-- [ ] NO auto-tagging, NO inference, NO suggestions
+#### MVP Route Structure
+```
+/ (index) - Kingdom map/hub
+/body - Body Kingdom overview
+/mind - Mind Kingdom overview
+/mind/feelings - Feelings hall
+/mind/feelings/anger - Anger zone
+/mind/feelings/jealousy - Jealousy zone
+/body/senses - Senses hall  
+/body/actions - Actions hall
+/battle/[nutId] - Kama battle interface
+/inventory - Unassigned NUTs list
+/library - Your klesha solutions
+```
+
+#### Route Implementation Tasks
+
+##### 3.1 Core Navigation Pages
+- [ ] Create `/` index with kingdom map ASCII
+- [ ] Create `/body/index.astro` with zone list
+- [ ] Create `/mind/index.astro` with zone list
+- [ ] Add navigation between kingdoms
+
+##### 3.2 Zone Pages
+- [ ] Create `/mind/feelings/index.astro` - feelings hall
+- [ ] Create `/mind/feelings/anger.astro` - anger zone
+- [ ] Create `/mind/feelings/jealousy.astro` - jealousy zone
+- [ ] Create `/body/senses/index.astro` - senses hall
+- [ ] Create `/body/actions/index.astro` - actions hall
+
+##### 3.3 Battle System Pages
+- [ ] Create `/battle/[nutId].astro` - dynamic battle page
+- [ ] Create `/inventory/index.astro` - unassigned NUTs
+- [ ] Create `/library/index.astro` - klesha solutions
+
+##### 3.4 NUT Bar Component
+- [ ] Create `src/components/NUTBar.astro` component
+- [ ] Add fixed positioning at bottom of viewport
+- [ ] Import in Layout.astro (always visible)
+- [ ] Text input with N/U/T type selector
+- [ ] Emotion selector and intensity slider
+- [ ] Mark as klesha checkbox
+- [ ] Collapsed/expanded states
+
+##### 3.5 Data Persistence
+- [ ] Install @nanostores/persistent
+- [ ] Create nuts store for NUT storage
+- [ ] Create zones store for zone health
+- [ ] Create library store for solutions
+- [ ] Save to localStorage on capture
+
+**No Inference - Manual Control:**
+- [ ] NO auto-tagging, NO type detection
+- [ ] NO suggestions or autocomplete
+- [ ] NO pattern recognition
+- [ ] User has complete manual control
 
 #### Inventory System (Unassigned NUTs)
 - [ ] Create inventory panel for captured but unassigned NUTs
