@@ -1,5 +1,37 @@
 # Life HUD as Modular NUT Journaling Mind Palace - Game Design
 
+## World Overview
+
+**LILAYA: Consciousness-Mapping Game**
+
+Real-life micro-journaling feeds a kingdom that IS your consciousness architecture.
+
+**Core Loop**
+1. **micro-journal Log life moments**: Event → Feeling → Your reaction choice
+2. **Creates NUTs** (Notes/thoughts, Urges/feelings, Tasks/actions) that import into kingdom
+3. **Identify tainted NUTs** (destructive patterns) before corruption spreads
+4. **CBT combat** to purify corrupted elements
+5. **Build wisdom archive** of successful strategies for future struggles
+
+**Samsara Kingdom Structure**
+- Outer ring: World/objects
+- Layer 1: Body 
+- Layer 2: Senses
+- Layer 3: Mind
+- Hidden: Emperor/Atman (final revelation)
+
+**Key Systems**
+
+*Memory System*: Track what worked. Kingdom stores your victories as accessible "Totems" showing how you overcame specific struggles.
+
+*Kama Corruption*: Untreated tainted NUTs cause kingdom chaos, teaching non-attachment through visible consequences.
+
+*Pattern Recognition*: Insights manifest as affecting mechanics and visuals in the kingdom.
+
+*Progression*: Scout → Guardian → Emperor (discovering you were always the ruler)
+
+The game makes mental hygiene visible as kingdom health while preserving your resilience patterns for future reference.
+
 ## Core Concept Evolution
 Transform the hierarchical system into a modular journaling platform where exploration unlocks tagging zones for NUT entries. Players build their personalized mind palace through discovery and guild customization.
 
@@ -457,3 +489,5 @@ Each NUT type requires different purification strategies:
 - Pattern recognition reveals corruption sources
 
 This design maintains Lilaya's core NUT philosophy while adding exploration, customization, and progression layers that make journaling feel like adventure.
+
+
