@@ -1,0 +1,173 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Library - Lilaya">
+	{/* 
+	┌─────────────────────────────────────────┐
+	│        YOUR KLESHA LIBRARY              │
+	│                                         │
+	│  FEELING → YOUR SOLUTION                │
+	│  ─────────────────────────              │
+	│  😠 Anger                               │
+	│  → "10 min intense workout"             │
+	│                                         │
+	│  💚 Jealousy                            │
+	│  → "Practice mudita meditation"         │
+	│                                         │
+	│  😰 Anxiety                             │
+	│  → [No solution yet] [Create]           │
+	│                                         │
+	│  [View All] [Add New] [Close]           │
+	└─────────────────────────────────────────┘
+	*/}
+	
+	<div class="max-w-4xl mx-auto py-12">
+		<!-- Header -->
+		<div class="text-center mb-8">
+			<h1 class="text-3xl font-bold mb-2">Klesha Solutions Library</h1>
+			<p class="text-gray-400">Your personal reference for skillful reactions</p>
+		</div>
+		
+		<!-- Stats -->
+		<div class="mb-6 p-4 bg-purple-900/20 border border-purple-600/50 rounded-lg">
+			<div class="flex justify-around text-center">
+				<div>
+					<div class="text-2xl font-bold text-purple-400">5</div>
+					<div class="text-sm text-gray-400">Solutions Created</div>
+				</div>
+				<div>
+					<div class="text-2xl font-bold text-green-400">3</div>
+					<div class="text-sm text-gray-400">Active Patterns</div>
+				</div>
+				<div>
+					<div class="text-2xl font-bold text-yellow-400">2</div>
+					<div class="text-sm text-gray-400">Pending Practice</div>
+				</div>
+			</div>
+		</div>
+		
+		<!-- Solution Cards -->
+		<div class="space-y-4">
+			<!-- Anger Solution -->
+			<div class="p-4 bg-black/30 border border-red-600/30 rounded-lg">
+				<div class="flex justify-between items-start mb-3">
+					<div class="flex items-center gap-3">
+						<span class="text-2xl">😠</span>
+						<div>
+							<h3 class="text-lg font-semibold text-red-400">Anger → Discipline</h3>
+							<p class="text-xs text-gray-400">Krodha → Tapas</p>
+						</div>
+					</div>
+					<span class="text-xs bg-green-600 px-2 py-1 rounded">Active</span>
+				</div>
+				
+				<div class="mb-3 p-3 bg-black/30 rounded">
+					<p class="text-sm text-gray-300 mb-2">When I feel: <span class="text-red-400">"Furious at someone"</span></p>
+					<p class="text-sm text-gray-300">I will: <span class="text-green-400">"10 minute intense workout"</span></p>
+				</div>
+				
+				<div class="flex justify-between items-center">
+					<div class="text-xs text-gray-400">
+						Used 12 times • 83% success rate
+					</div>
+					<button class="px-3 py-1 bg-red-600 hover:bg-red-500 rounded text-sm transition-colors">
+						Practice Now
+					</button>
+				</div>
+			</div>
+			
+			<!-- Jealousy Solution -->
+			<div class="p-4 bg-black/30 border border-green-600/30 rounded-lg">
+				<div class="flex justify-between items-start mb-3">
+					<div class="flex items-center gap-3">
+						<span class="text-2xl">💚</span>
+						<div>
+							<h3 class="text-lg font-semibold text-green-400">Jealousy → Joy</h3>
+							<p class="text-xs text-gray-400">Comparison → Mudita</p>
+						</div>
+					</div>
+					<span class="text-xs bg-green-600 px-2 py-1 rounded">Active</span>
+				</div>
+				
+				<div class="mb-3 p-3 bg-black/30 rounded">
+					<p class="text-sm text-gray-300 mb-2">When I feel: <span class="text-yellow-400">"Envious of others' success"</span></p>
+					<p class="text-sm text-gray-300">I will: <span class="text-green-400">"Practice mudita - celebrate their joy"</span></p>
+				</div>
+				
+				<div class="flex justify-between items-center">
+					<div class="text-xs text-gray-400">
+						Used 8 times • 75% success rate
+					</div>
+					<button class="px-3 py-1 bg-green-600 hover:bg-green-500 rounded text-sm transition-colors">
+						Practice Now
+					</button>
+				</div>
+			</div>
+			
+			<!-- Anxiety - No Solution Yet -->
+			<div class="p-4 bg-black/30 border border-gray-600/30 rounded-lg">
+				<div class="flex justify-between items-start mb-3">
+					<div class="flex items-center gap-3">
+						<span class="text-2xl">😰</span>
+						<div>
+							<h3 class="text-lg font-semibold text-gray-400">Anxiety</h3>
+							<p class="text-xs text-gray-500">No solution created yet</p>
+						</div>
+					</div>
+				</div>
+				
+				<div class="mb-3 p-3 bg-black/30 rounded border border-dashed border-gray-600">
+					<p class="text-sm text-gray-500 text-center">You haven't created a solution for this feeling yet</p>
+				</div>
+				
+				<div class="flex justify-center">
+					<button class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded transition-colors">
+						+ Create Solution
+					</button>
+				</div>
+			</div>
+			
+			<!-- Greed Solution -->
+			<div class="p-4 bg-black/30 border border-yellow-600/30 rounded-lg">
+				<div class="flex justify-between items-start mb-3">
+					<div class="flex items-center gap-3">
+						<span class="text-2xl">🤑</span>
+						<div>
+							<h3 class="text-lg font-semibold text-yellow-400">Greed → Generosity</h3>
+							<p class="text-xs text-gray-400">Lobha → Dana</p>
+						</div>
+					</div>
+					<span class="text-xs bg-yellow-600 px-2 py-1 rounded">Needs Practice</span>
+				</div>
+				
+				<div class="mb-3 p-3 bg-black/30 rounded">
+					<p class="text-sm text-gray-300 mb-2">When I feel: <span class="text-yellow-400">"I need more money/things"</span></p>
+					<p class="text-sm text-gray-300">I will: <span class="text-green-400">"Give something away or donate"</span></p>
+				</div>
+				
+				<div class="flex justify-between items-center">
+					<div class="text-xs text-gray-400">
+						Used 3 times • 67% success rate
+					</div>
+					<button class="px-3 py-1 bg-yellow-600 hover:bg-yellow-500 rounded text-sm transition-colors">
+						Practice Now
+					</button>
+				</div>
+			</div>
+		</div>
+		
+		<!-- Add New Button -->
+		<div class="mt-8 text-center">
+			<button class="px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded-lg transition-colors">
+				+ Add New Solution
+			</button>
+		</div>
+		
+		<!-- Navigation -->
+		<div class="mt-8 flex justify-between">
+			<a href="/inventory" class="text-gray-400 hover:text-gray-200">← Inventory</a>
+			<a href="/" class="text-gray-400 hover:text-gray-200">Kingdom Gates →</a>
+		</div>
+	</div>
+</Layout>

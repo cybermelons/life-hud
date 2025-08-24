@@ -2,213 +2,74 @@
 import Layout from '../../layouts/Layout.astro';
 ---
 
-<Layout title="Body - Life HUD" zone="body">
-	<div class="max-w-6xl mx-auto">
+<Layout title="Body Kingdom - Lilaya">
+	{/* 
+	┌─────────────────────────────────────────┐
+	│          BODY KINGDOM                   │
+	│                                         │
+	│    [Senses Hall]    [Actions Hall]      │
+	│    👁️ 0 NUTs        💪 0 NUTs           │
+	│    ✓ Available      ✓ Available          │
+	│                                         │
+	│  Kingdom Health: ████████░░ 80%         │
+	│                                         │
+	│  Choose a hall to explore...            │
+	└─────────────────────────────────────────┘
+	*/}
+	
+	<div class="max-w-4xl mx-auto py-12">
 		<!-- Header -->
-		<div class="mb-8">
-			<h1 class="text-4xl font-bold text-green-400 mb-2">Body Zone</h1>
-			<p class="text-gray-300">Physical awareness and embodiment tracking</p>
+		<div class="text-center mb-8">
+			<h1 class="text-4xl font-bold text-green-400 mb-2">Body Kingdom</h1>
+			<p class="text-gray-400">The Outer Ring - Where experiences enter</p>
 		</div>
-
-		<!-- Zone Health Metrics -->
-		<div class="grid grid-cols-3 gap-4 mb-8">
-			<div class="bg-black/30 rounded-lg p-4 border border-green-600/30">
-				<div class="text-2xl font-bold text-green-400">85%</div>
-				<div class="text-sm text-gray-400">Zone Health</div>
+		
+		<!-- Kingdom Health -->
+		<div class="mb-8 p-4 bg-green-900/20 border border-green-600/50 rounded-lg">
+			<div class="flex justify-between items-center mb-2">
+				<span class="text-green-400">Kingdom Health</span>
+				<span class="text-green-400">80%</span>
 			</div>
-			<div class="bg-black/30 rounded-lg p-4 border border-green-600/30">
-				<div class="text-2xl font-bold text-green-400">3</div>
-				<div class="text-sm text-gray-400">Total NUTs</div>
-			</div>
-			<div class="bg-black/30 rounded-lg p-4 border border-green-600/30">
-				<div class="text-2xl font-bold text-green-400">2/7</div>
-				<div class="text-sm text-gray-400">Subzones Active</div>
+			<div class="w-full bg-gray-700 rounded-full h-2">
+				<div class="bg-green-500 h-2 rounded-full" style="width: 80%"></div>
 			</div>
 		</div>
-
-		<!-- Body Diagram/Tree -->
-		<div class="bg-gradient-to-br from-green-900/20 to-green-800/10 rounded-lg p-8 border border-green-600/30 mb-8">
-			<h2 class="text-2xl font-semibold text-green-400 mb-6">Body Map</h2>
+		
+		<!-- Zone Grid -->
+		<div class="grid md:grid-cols-2 gap-6 mb-8">
+			<!-- Senses Hall -->
+			<a href="/body/senses" class="block p-6 bg-green-900/30 border border-green-600/50 rounded-lg hover:bg-green-900/50 transition-colors">
+				<div class="text-3xl mb-2">👁️</div>
+				<h2 class="text-xl font-semibold text-green-400 mb-2">Senses Hall</h2>
+				<p class="text-sm text-gray-400 mb-4">Where experiences enter through perception</p>
+				<div class="flex justify-between text-sm">
+					<span class="text-gray-500">0 NUTs stored</span>
+					<span class="text-green-400">✓ Available</span>
+				</div>
+			</a>
 			
-			<div class="grid md:grid-cols-2 gap-8">
-				<!-- Senses (Jnanendriyas) -->
-				<div class="space-y-4">
-					<h3 class="text-lg font-semibold text-green-300">🎭 Senses (Jnanendriyas)</h3>
-					<div class="pl-4 space-y-3">
-						<a href="/body/senses/sight" class="block p-3 bg-black/20 rounded-lg hover:bg-green-900/20 transition border border-green-700/30">
-							<div class="flex items-center justify-between">
-								<span class="flex items-center">
-									<span class="text-2xl mr-3">👁️</span>
-									<div>
-										<div class="font-medium">Sight</div>
-										<div class="text-xs text-gray-400">Visual awareness</div>
-									</div>
-								</span>
-								<span class="text-xs bg-gray-700 px-2 py-1 rounded">Locked</span>
-							</div>
-						</a>
-						<a href="/body/senses/hearing" class="block p-3 bg-black/20 rounded-lg hover:bg-green-900/20 transition border border-green-700/30">
-							<div class="flex items-center justify-between">
-								<span class="flex items-center">
-									<span class="text-2xl mr-3">👂</span>
-									<div>
-										<div class="font-medium">Hearing</div>
-										<div class="text-xs text-gray-400">Auditory awareness</div>
-									</div>
-								</span>
-								<span class="text-xs bg-gray-700 px-2 py-1 rounded">Locked</span>
-							</div>
-						</a>
-						<a href="/body/senses/smell" class="block p-3 bg-black/20 rounded-lg hover:bg-green-900/20 transition border border-green-700/30">
-							<div class="flex items-center justify-between">
-								<span class="flex items-center">
-									<span class="text-2xl mr-3">👃</span>
-									<div>
-										<div class="font-medium">Smell</div>
-										<div class="text-xs text-gray-400">Olfactory awareness</div>
-									</div>
-								</span>
-								<span class="text-xs bg-gray-700 px-2 py-1 rounded">Locked</span>
-							</div>
-						</a>
-						<a href="/body/senses/taste" class="block p-3 bg-black/20 rounded-lg hover:bg-green-900/20 transition border border-green-700/30">
-							<div class="flex items-center justify-between">
-								<span class="flex items-center">
-									<span class="text-2xl mr-3">👅</span>
-									<div>
-										<div class="font-medium">Taste</div>
-										<div class="text-xs text-gray-400">Diet & flavor tracking</div>
-									</div>
-								</span>
-								<span class="text-xs bg-green-700 px-2 py-1 rounded">1 NUT</span>
-							</div>
-						</a>
-						<a href="/body/senses/touch" class="block p-3 bg-black/20 rounded-lg hover:bg-green-900/20 transition border border-green-700/30">
-							<div class="flex items-center justify-between">
-								<span class="flex items-center">
-									<span class="text-2xl mr-3">🤚</span>
-									<div>
-										<div class="font-medium">Touch</div>
-										<div class="text-xs text-gray-400">Tactile awareness</div>
-									</div>
-								</span>
-								<span class="text-xs bg-gray-700 px-2 py-1 rounded">Locked</span>
-							</div>
-						</a>
-					</div>
+			<!-- Actions Hall -->
+			<a href="/body/actions" class="block p-6 bg-green-900/30 border border-green-600/50 rounded-lg hover:bg-green-900/50 transition-colors">
+				<div class="text-3xl mb-2">💪</div>
+				<h2 class="text-xl font-semibold text-green-400 mb-2">Actions Hall</h2>
+				<p class="text-sm text-gray-400 mb-4">Where intentions manifest physically</p>
+				<div class="flex justify-between text-sm">
+					<span class="text-gray-500">0 NUTs stored</span>
+					<span class="text-green-400">✓ Available</span>
 				</div>
-
-				<!-- Actions (Karmendriyas) -->
-				<div class="space-y-4">
-					<h3 class="text-lg font-semibold text-green-300">⚡ Actions (Karmendriyas)</h3>
-					<div class="pl-4 space-y-3">
-						<a href="/body/actions/muscles" class="block p-3 bg-black/20 rounded-lg hover:bg-green-900/20 transition border border-green-700/30">
-							<div class="flex items-center justify-between">
-								<span class="flex items-center">
-									<span class="text-2xl mr-3">💪</span>
-									<div>
-										<div class="font-medium">Muscles</div>
-										<div class="text-xs text-gray-400">Workout & strength</div>
-									</div>
-								</span>
-								<span class="text-xs bg-green-700 px-2 py-1 rounded">2 NUTs</span>
-							</div>
-						</a>
-						<a href="/body/actions/locomotion" class="block p-3 bg-black/20 rounded-lg hover:bg-green-900/20 transition border border-green-700/30">
-							<div class="flex items-center justify-between">
-								<span class="flex items-center">
-									<span class="text-2xl mr-3">🚶</span>
-									<div>
-										<div class="font-medium">Locomotion</div>
-										<div class="text-xs text-gray-400">Movement & walking</div>
-									</div>
-								</span>
-								<span class="text-xs bg-green-700 px-2 py-1 rounded">1 NUT</span>
-							</div>
-						</a>
-						<a href="/body/actions/grasping" class="block p-3 bg-black/20 rounded-lg hover:bg-green-900/20 transition border border-green-700/30">
-							<div class="flex items-center justify-between">
-								<span class="flex items-center">
-									<span class="text-2xl mr-3">✊</span>
-									<div>
-										<div class="font-medium">Grasping</div>
-										<div class="text-xs text-gray-400">Hand coordination</div>
-									</div>
-								</span>
-								<span class="text-xs bg-gray-700 px-2 py-1 rounded">Locked</span>
-							</div>
-						</a>
-						<a href="/body/actions/speech" class="block p-3 bg-black/20 rounded-lg hover:bg-green-900/20 transition border border-green-700/30">
-							<div class="flex items-center justify-between">
-								<span class="flex items-center">
-									<span class="text-2xl mr-3">🗣️</span>
-									<div>
-										<div class="font-medium">Speech</div>
-										<div class="text-xs text-gray-400">Voice & communication</div>
-									</div>
-								</span>
-								<span class="text-xs bg-gray-700 px-2 py-1 rounded">Locked</span>
-							</div>
-						</a>
-						<a href="/body/actions/excretion" class="block p-3 bg-black/20 rounded-lg hover:bg-green-900/20 transition border border-green-700/30 opacity-50">
-							<div class="flex items-center justify-between">
-								<span class="flex items-center">
-									<span class="text-2xl mr-3">💩</span>
-									<div>
-										<div class="font-medium">Excretion</div>
-										<div class="text-xs text-gray-400">Digestion tracking</div>
-									</div>
-								</span>
-								<span class="text-xs bg-gray-700 px-2 py-1 rounded">Locked</span>
-							</div>
-						</a>
-					</div>
-				</div>
-			</div>
+			</a>
 		</div>
-
-		<!-- Recent Body NUTs -->
-		<div class="bg-black/30 rounded-lg p-6 border border-green-600/30">
-			<h2 class="text-xl font-semibold text-green-400 mb-4">Recent Body NUTs</h2>
-			<div class="space-y-3">
-				<div class="bg-black/20 rounded-lg p-4 border border-green-700/20">
-					<div class="flex items-start justify-between mb-2">
-						<span class="bg-green-800 text-xs px-2 py-1 rounded">📝 Note</span>
-						<span class="text-xs text-gray-400">1 hour ago</span>
-					</div>
-					<p class="text-gray-300 mb-2">Feeling energized after morning workout</p>
-					<div class="flex items-center gap-2">
-						<span class="text-xs bg-green-900/50 px-2 py-1 rounded">#muscles</span>
-						<span class="text-xs bg-green-900/50 px-2 py-1 rounded">#energy</span>
-						<span class="ml-auto text-sm">💪 🔥</span>
-					</div>
-				</div>
-				
-				<div class="bg-black/20 rounded-lg p-4 border border-green-700/20">
-					<div class="flex items-start justify-between mb-2">
-						<span class="bg-green-800 text-xs px-2 py-1 rounded">✅ Task</span>
-						<span class="text-xs text-gray-400">2 hours ago</span>
-					</div>
-					<p class="text-gray-300 mb-2">Complete 3 sets of bicep curls</p>
-					<div class="flex items-center gap-2">
-						<span class="text-xs bg-green-900/50 px-2 py-1 rounded">#bicep</span>
-						<span class="ml-auto text-sm">✅</span>
-					</div>
-				</div>
-				
-				<div class="bg-black/20 rounded-lg p-4 border border-green-700/20">
-					<div class="flex items-start justify-between mb-2">
-						<span class="bg-green-800 text-xs px-2 py-1 rounded">💭 Urge</span>
-						<span class="text-xs text-gray-400">30 min ago</span>
-					</div>
-					<p class="text-gray-300 mb-2">Want to go for a walk in the park</p>
-					<div class="flex items-center gap-2">
-						<span class="text-xs bg-green-900/50 px-2 py-1 rounded">#locomotion</span>
-						<span class="text-xs bg-green-900/50 px-2 py-1 rounded">#nature</span>
-						<span class="ml-auto text-sm">🚶 🌳</span>
-					</div>
-				</div>
-			</div>
+		
+		<!-- Recent Activity -->
+		<div class="p-4 bg-black/30 border border-green-600/30 rounded-lg">
+			<h3 class="text-green-400 mb-2">Recent Activity</h3>
+			<p class="text-gray-500 text-sm">No recent NUTs in this kingdom</p>
+		</div>
+		
+		<!-- Navigation -->
+		<div class="mt-8 flex justify-between">
+			<a href="/" class="text-gray-400 hover:text-gray-200">← Kingdom Gates</a>
+			<a href="/mind" class="text-gray-400 hover:text-gray-200">Mind Kingdom →</a>
 		</div>
 	</div>
 </Layout>

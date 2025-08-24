@@ -1,0 +1,135 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Inventory - Lilaya">
+	{/* 
+	┌─────────────────────────────────────────┐
+	│            INVENTORY                    │
+	│         Unassigned NUTs                 │
+	│                                         │
+	│  📦 3 items waiting to be sorted        │
+	│                                         │
+	│  1. "Saw ex with someone new"           │
+	│     Type: Urge | 2 hours ago            │
+	│     [Assign to Zone] [Mark Klesha]      │
+	│                                         │
+	│  2. "Need to finish project"            │
+	│     Type: Task | 1 hour ago             │
+	│     [Assign to Zone] [Complete]         │
+	│                                         │
+	│  3. "Interesting pattern noticed"       │
+	│     Type: Note | 30 min ago             │
+	│     [Assign to Zone] [Link to NUT]      │
+	└─────────────────────────────────────────┘
+	*/}
+	
+	<div class="max-w-4xl mx-auto py-12">
+		<!-- Header -->
+		<div class="text-center mb-8">
+			<h1 class="text-3xl font-bold mb-2">Inventory</h1>
+			<p class="text-gray-400">Unassigned NUTs waiting to be sorted</p>
+		</div>
+		
+		<!-- Stats Bar -->
+		<div class="mb-6 p-4 bg-gray-800/30 border border-gray-600/50 rounded-lg">
+			<div class="flex justify-around text-center">
+				<div>
+					<div class="text-2xl font-bold">3</div>
+					<div class="text-sm text-gray-400">Total Items</div>
+				</div>
+				<div>
+					<div class="text-2xl font-bold text-yellow-400">1</div>
+					<div class="text-sm text-gray-400">Potential Kleshas</div>
+				</div>
+				<div>
+					<div class="text-2xl font-bold text-green-400">2</div>
+					<div class="text-sm text-gray-400">Ready to Assign</div>
+				</div>
+			</div>
+		</div>
+		
+		<!-- Inventory Items -->
+		<div class="space-y-4">
+			<!-- Item 1 - Potential Klesha -->
+			<div class="p-4 bg-black/30 border border-yellow-600/30 rounded-lg">
+				<div class="flex justify-between items-start mb-3">
+					<div>
+						<span class="bg-blue-600 text-xs px-2 py-1 rounded">💭 Urge</span>
+						<span class="text-xs text-gray-400 ml-2">2 hours ago</span>
+					</div>
+					<span class="text-yellow-400 text-sm">⚠️ Potential Klesha</span>
+				</div>
+				<p class="text-lg mb-3">"Saw ex with someone new"</p>
+				<div class="flex gap-2">
+					<button class="px-3 py-1 bg-blue-600 hover:bg-blue-500 rounded text-sm transition-colors">
+						📍 Assign to Zone
+					</button>
+					<button class="px-3 py-1 bg-yellow-600 hover:bg-yellow-500 rounded text-sm transition-colors">
+						⚠️ Mark as Klesha
+					</button>
+					<button class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-sm transition-colors">
+						🔗 Link to NUT
+					</button>
+				</div>
+			</div>
+			
+			<!-- Item 2 - Task -->
+			<div class="p-4 bg-black/30 border border-gray-600/30 rounded-lg">
+				<div class="flex justify-between items-start mb-3">
+					<div>
+						<span class="bg-green-600 text-xs px-2 py-1 rounded">✅ Task</span>
+						<span class="text-xs text-gray-400 ml-2">1 hour ago</span>
+					</div>
+				</div>
+				<p class="text-lg mb-3">"Need to finish project documentation"</p>
+				<div class="flex gap-2">
+					<button class="px-3 py-1 bg-blue-600 hover:bg-blue-500 rounded text-sm transition-colors">
+						📍 Assign to Zone
+					</button>
+					<button class="px-3 py-1 bg-green-600 hover:bg-green-500 rounded text-sm transition-colors">
+						✅ Mark Complete
+					</button>
+					<button class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-sm transition-colors">
+						🔗 Link to NUT
+					</button>
+				</div>
+			</div>
+			
+			<!-- Item 3 - Note -->
+			<div class="p-4 bg-black/30 border border-gray-600/30 rounded-lg">
+				<div class="flex justify-between items-start mb-3">
+					<div>
+						<span class="bg-purple-600 text-xs px-2 py-1 rounded">📝 Note</span>
+						<span class="text-xs text-gray-400 ml-2">30 min ago</span>
+					</div>
+				</div>
+				<p class="text-lg mb-3">"I notice I'm more creative in the morning"</p>
+				<div class="flex gap-2">
+					<button class="px-3 py-1 bg-blue-600 hover:bg-blue-500 rounded text-sm transition-colors">
+						📍 Assign to Zone
+					</button>
+					<button class="px-3 py-1 bg-purple-600 hover:bg-purple-500 rounded text-sm transition-colors">
+						💡 Mark as Insight
+					</button>
+					<button class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-sm transition-colors">
+						🔗 Link to NUT
+					</button>
+				</div>
+			</div>
+		</div>
+		
+		<!-- Empty State (hidden when items exist) -->
+		<div class="hidden p-12 bg-black/30 border border-gray-600/30 rounded-lg text-center">
+			<div class="text-4xl mb-4">📦</div>
+			<h3 class="text-xl text-gray-400 mb-2">No Unassigned NUTs</h3>
+			<p class="text-sm text-gray-500">All your NUTs have been sorted into zones</p>
+		</div>
+		
+		<!-- Navigation -->
+		<div class="mt-8 flex justify-between">
+			<a href="/" class="text-gray-400 hover:text-gray-200">← Kingdom Gates</a>
+			<a href="/library" class="text-gray-400 hover:text-gray-200">Library →</a>
+		</div>
+	</div>
+</Layout>
