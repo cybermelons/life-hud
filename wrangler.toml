@@ -1,20 +1,7 @@
-name = "lilaya-pwa"
+name = "life-hud"
 compatibility_date = "2024-01-01"
 main = "worker.js"
-
-[site]
-bucket = "./dist"
-exclude = [
-  "node_modules",
-  ".git",
-  "*.md",
-  "package*.json",
-  "*.lock",
-  ".env*",
-  "wrangler.toml",
-  "supabase-migration.sql",
-  "docs"
-]
+assets = { directory = "./", binding = "ASSETS" }
 
 # wrangler.toml (wrangler v3.88.0^)
 [observability.logs]

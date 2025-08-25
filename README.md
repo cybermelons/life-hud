@@ -1,14 +1,15 @@
-# Life HUD - Awareness Tracking System
+# Life HUD - NUT Capture PWA
 
-A hierarchical awareness system that maintains a HUD (Heads-Up Display) of body, mind, and spirit awareness, with detailed breakdowns for tracking and developing each aspect.
+A Progressive Web App (PWA) for capturing and syncing NUTs (Notes, URLs, Todos) with real-time sync capabilities.
 
 ## Architecture
 
-- **Framework**: Astro with SSR
-- **Deployment**: Cloudflare Workers
-- **Styling**: Tailwind CSS
-- **State Management**: Nanostores
-- **Database**: Cloudflare D1 (planned)
+- **Frontend**: Vanilla JavaScript with Alpine.js for reactivity
+- **Styling**: Tailwind CSS via CDN
+- **Icons**: Tabler Icons
+- **Backend**: Supabase (PostgreSQL + Auth)
+- **Deployment**: Cloudflare Workers with Assets
+- **State**: LocalStorage with Supabase sync
 
 ## Page Structure
 
@@ -108,31 +109,59 @@ A hierarchical awareness system that maintains a HUD (Heads-Up Display) of body,
         └── gratitude          # Gratitude practices and appreciation
 ```
 
+## Features
+
+- **Offline-First**: Works completely offline with localStorage
+- **Quick Capture**: Fast NUT entry with keyboard shortcuts
+- **Smart Parsing**: Automatically detects URLs and formats them
+- **Social Auth**: Login with Google, GitHub, or Discord
+- **Real-time Sync**: Syncs across devices when logged in
+- **PWA**: Installable as a native app
+- **Service Worker**: Offline caching and background sync
+
 ## Development
 
 ```bash
 # Install dependencies
 pnpm install
 
-# Run development server
-pnpm dev
-
-# Build for production
-pnpm build
-
-# Deploy to Cloudflare
+# Deploy to Cloudflare Workers
 pnpm run deploy
+
+# The app runs at https://life-hud.am0ottrv.workers.dev
 ```
 
-## HUD Concept
+## Deployment Configuration
 
-The HUD provides real-time awareness tracking across all dimensions, presenting a unified view of your body-mind-spirit state. Each component can be expanded for detailed tracking and exercises.
+The app uses Cloudflare Workers with the Assets binding for static file serving:
+
+```toml
+# wrangler.toml
+name = "life-hud"
+compatibility_date = "2024-01-01"
+main = "worker.js"
+assets = { directory = "./", binding = "ASSETS" }
+```
+
+The worker handles:
+- Clean URL routing (e.g., `/inventory` → `/inventory.html`)
+- Static asset serving
+- PWA manifest and service worker
+
+## Supabase Setup
+
+1. Create a new Supabase project
+2. Run the migration in `supabase-migration.sql`
+3. Enable OAuth providers (Google, GitHub, Discord)
+4. Update `app.js` with your Supabase URL and anon key
 
 ## Implementation Status
 
-- ✅ Basic structure created
-- ✅ Main navigation pages
-- ⏳ Individual tracking pages (WIP)
-- ⏳ Data persistence layer
-- ⏳ Real-time HUD display
-- ⏳ Cloudflare Workers deployment
+- ✅ NUT capture interface
+- ✅ LocalStorage persistence
+- ✅ Supabase authentication
+- ✅ Cross-device sync
+- ✅ PWA with service worker
+- ✅ Cloudflare Workers deployment
+- ✅ Clean URL routing
+- ✅ Social login (Google, GitHub, Discord)

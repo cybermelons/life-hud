@@ -3,23 +3,13 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
+    "deploy": "wrangler deploy"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^12.6.4",
     "@cloudflare/kv-asset-handler": "^0.3.0",
-    "@nanostores/persistent": "^1.1.0",
-    "@supabase/supabase-js": "^2.56.0",
-    "@tailwindcss/postcss": "^4.1.12",
-    "@tailwindcss/vite": "^4.1.12",
-    "astro": "^5.13.2",
-    "nanostores": "^1.0.1",
-    "tailwindcss": "^4.1.12"
+    "@supabase/supabase-js": "^2.56.0"
   },
   "devDependencies": {
-    "supabase": "^2.34.3"
+    "wrangler": "^3.88.0"
   }
 }
