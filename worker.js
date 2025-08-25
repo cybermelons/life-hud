@@ -1,52 +1,79 @@
-// Cloudflare Worker to serve static PWA files
-import indexHTML from './index.html';
-import inventoryHTML from './inventory.html';
-import appJS from './app.js';
-import swJS from './sw.js';
-import manifestJSON from './manifest.json';
-
-const files = {
-  '/': indexHTML,
-  '/index.html': indexHTML,
-  '/inventory': inventoryHTML,
-  '/inventory.html': inventoryHTML,
-  '/app.js': appJS,
-  '/sw.js': swJS,
-  '/manifest.json': manifestJSON,
-};
+import { getAssetFromKV } from '@cloudflare/kv-asset-handler';
 
 export default {
-  async fetch(request) {
-    const url = new URL(request.url);
-    let path = url.pathname;
-    
-    // Handle root paths
-    if (path.endsWith('/')) {
-      path = path.slice(0, -1) || '/';
-    }
-    
-    // Check if we have the file
-    if (files[path]) {
-      // Determine content type
-      let contentType = 'text/html';
-      if (path.endsWith('.js')) contentType = 'application/javascript';
-      else if (path.endsWith('.json')) contentType = 'application/json';
+  async fetch(request, env, ctx) {
+    try {
+      // Handle clean URLs for the PWA
+      const url = new URL(request.url);
+      let pathname = url.pathname;
       
-      return new Response(files[path], {
-        headers: {
-          'Content-Type': contentType,
-          'Cache-Control': 'public, max-age=3600',
-          'Service-Worker-Allowed': '/',
+      // Define route mappings for clean URLs
+      const routes = {
+        '/': '/index.html',
+        '/inventory': '/inventory.html',
+        '/library': '/library.html',
+        '/mind': '/mind/index.html',
+        '/body': '/body/index.html',
+        '/mind/feelings': '/mind/feelings.html',
+        '/body/senses': '/body/senses.html',
+        '/body/actions': '/body/actions.html'
+      };
+      
+      // Check if we have a specific route mapping
+      if (routes[pathname]) {
+        const mappedRequest = new Request(url.origin + routes[pathname], request);
+        return await getAssetFromKV(
+          {
+            request: mappedRequest,
+            waitUntil: ctx.waitUntil.bind(ctx)
+          },
+          {
+            ASSET_NAMESPACE: env.__STATIC_CONTENT,
+            ASSET_MANIFEST: JSON.parse(env.__STATIC_CONTENT_MANIFEST)
+          }
+        );
+      }
+      
+      // Try to serve the asset as-is
+      return await getAssetFromKV(
+        {
+          request,
+          waitUntil: ctx.waitUntil.bind(ctx)
         },
+        {
+          ASSET_NAMESPACE: env.__STATIC_CONTENT,
+          ASSET_MANIFEST: JSON.parse(env.__STATIC_CONTENT_MANIFEST)
+        }
+      );
+      
+    } catch (e) {
+      // If asset not found and path has no extension, try with .html
+      const url = new URL(request.url);
+      if (!url.pathname.includes('.')) {
+        try {
+          const htmlRequest = new Request(url.origin + url.pathname + '.html', request);
+          return await getAssetFromKV(
+            {
+              request: htmlRequest,
+              waitUntil: ctx.waitUntil.bind(ctx)
+            },
+            {
+              ASSET_NAMESPACE: env.__STATIC_CONTENT,
+              ASSET_MANIFEST: JSON.parse(env.__STATIC_CONTENT_MANIFEST)
+            }
+          );
+        } catch (htmlError) {
+          // If still not found, serve 404
+        }
+      }
+      
+      // Return 404 response
+      return new Response('Not found', { 
+        status: 404,
+        headers: {
+          'Content-Type': 'text/plain'
+        }
       });
     }
-    
-    // Default to index.html for client-side routing
-    return new Response(indexHTML, {
-      headers: {
-        'Content-Type': 'text/html',
-        'Cache-Control': 'public, max-age=3600',
-      },
-    });
   },
 };
