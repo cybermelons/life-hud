@@ -1,3 +1,9 @@
+// Supabase Configuration
+const SUPABASE_URL = 'https://rgjndmuhnnpnhxfppmpd.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnam5kbXVobm5wbmh4ZnBwbXBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjQ2MTgzMzAsImV4cCI6MjA0MDE5NDMzMH0.y2MlHKG5vKbmRMcWo_g1pFZbMpAhUUGQ-rJjLz-nJtI';
+
+let supabase = null;
+
 // Alpine.js App Store
 document.addEventListener('alpine:init', () => {
     Alpine.store('app', {
@@ -8,10 +14,19 @@ document.addEventListener('alpine:init', () => {
         nutContent: '',
         isOnline: navigator.onLine,
         
+        // Auth state
+        user: null,
+        showLoginModal: false,
+        syncStatus: 'idle', // idle, syncing, synced, error
+        lastSyncTime: null,
+        
         // Initialize
         init() {
             // Load from localStorage
             this.loadNuts();
+            
+            // Initialize Supabase and check auth state
+            this.initSupabase();
             
             // Set up online/offline detection
             window.addEventListener('online', () => {
@@ -37,6 +52,142 @@ document.addEventListener('alpine:init', () => {
                     }, 250);
                 }
             });
+        },
+        
+        // Initialize Supabase (lazy - only when needed)
+        async initSupabase() {
+            if (!supabase && typeof window.supabase !== 'undefined') {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                
+                // Check for existing session
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                    this.user = session.user;
+                    // Sync on login
+                    this.syncFromSupabase();
+                }
+                
+                // Listen for auth changes
+                supabase.auth.onAuthStateChange((event, session) => {
+                    this.user = session?.user || null;
+                    if (event === 'SIGNED_IN') {
+                        this.syncFromSupabase();
+                    }
+                });
+            }
+        },
+        
+        // Sign in with OAuth provider
+        async signInWith(provider) {
+            await this.initSupabase();
+            if (!supabase) {
+                alert('Supabase not loaded. Please try again.');
+                return;
+            }
+            
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: provider,
+                options: {
+                    redirectTo: window.location.origin + '/inventory'
+                }
+            });
+            
+            if (error) {
+                console.error('Auth error:', error);
+                alert('Login failed: ' + error.message);
+            }
+        },
+        
+        // Sign out
+        async signOut() {
+            if (supabase) {
+                await supabase.auth.signOut();
+                this.user = null;
+                this.syncStatus = 'idle';
+            }
+        },
+        
+        // Sync from Supabase to local
+        async syncFromSupabase() {
+            if (!supabase || !this.user) return;
+            
+            this.syncStatus = 'syncing';
+            try {
+                const { data, error } = await supabase
+                    .from('nuts')
+                    .select('*')
+                    .eq('user_id', this.user.id)
+                    .order('timestamp', { ascending: false });
+                
+                if (error) throw error;
+                
+                // Merge with local data (prefer newer)
+                const merged = this.mergeNuts(this.nuts, data || []);
+                this.nuts = merged;
+                this.saveNuts();
+                
+                this.syncStatus = 'synced';
+                this.lastSyncTime = new Date();
+            } catch (error) {
+                console.error('Sync error:', error);
+                this.syncStatus = 'error';
+            }
+        },
+        
+        // Sync local changes to Supabase
+        async syncToSupabase() {
+            if (!supabase || !this.user) return;
+            
+            this.syncStatus = 'syncing';
+            try {
+                // Prepare nuts for Supabase (add user_id)
+                const nutsToSync = this.nuts.map(nut => ({
+                    ...nut,
+                    user_id: this.user.id
+                }));
+                
+                // Upsert all nuts
+                const { error } = await supabase
+                    .from('nuts')
+                    .upsert(nutsToSync, { onConflict: 'id' });
+                
+                if (error) throw error;
+                
+                this.syncStatus = 'synced';
+                this.lastSyncTime = new Date();
+            } catch (error) {
+                console.error('Sync error:', error);
+                this.syncStatus = 'error';
+            }
+        },
+        
+        // Merge nuts arrays, preferring newer versions
+        mergeNuts(local, remote) {
+            const nutMap = new Map();
+            
+            // Add remote nuts
+            remote.forEach(nut => {
+                nutMap.set(nut.id, nut);
+            });
+            
+            // Add/update with local nuts (prefer local if newer)
+            local.forEach(nut => {
+                const existing = nutMap.get(nut.id);
+                if (!existing || new Date(nut.timestamp) > new Date(existing.timestamp)) {
+                    nutMap.set(nut.id, nut);
+                }
+            });
+            
+            return Array.from(nutMap.values())
+                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        },
+        
+        // Manual sync trigger
+        async sync() {
+            if (this.user) {
+                await this.syncToSupabase();
+                await this.syncFromSupabase();
+            }
         },
         
         // Load NUTs from localStorage
@@ -128,36 +279,10 @@ document.addEventListener('alpine:init', () => {
         
         // Queue for sync
         queueSync(nutId) {
-            if (!this.isOnline) {
-                // Store in queue for later
-                let queue = JSON.parse(localStorage.getItem('lilaya_sync_queue') || '[]');
-                if (!queue.includes(nutId)) {
-                    queue.push(nutId);
-                    localStorage.setItem('lilaya_sync_queue', JSON.stringify(queue));
-                }
-            } else {
-                // Sync immediately if online
-                this.syncNut(nutId);
+            // If user is logged in and online, sync immediately
+            if (this.user && this.isOnline) {
+                this.syncToSupabase();
             }
-        },
-        
-        // Sync a single NUT (placeholder for future Supabase integration)
-        syncNut(nutId) {
-            // TODO: Implement Supabase sync
-            console.log('Would sync NUT:', nutId);
-        },
-        
-        // Sync all pending changes
-        sync() {
-            if (!this.isOnline) return;
-            
-            const queue = JSON.parse(localStorage.getItem('lilaya_sync_queue') || '[]');
-            queue.forEach(nutId => {
-                this.syncNut(nutId);
-            });
-            
-            // Clear queue after sync
-            localStorage.removeItem('lilaya_sync_queue');
         },
         
         // Export data
