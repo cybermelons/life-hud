@@ -1,5 +1,6 @@
-name = "life-hud"
+name = "lilaya-pwa"
 compatibility_date = "2024-01-01"
+main = "_worker.js"
 
 [site]
 bucket = "./"
@@ -14,3 +15,10 @@ exclude = [
   "supabase-migration.sql",
   "docs"
 ]
+
+# wrangler.toml (wrangler v3.88.0^)
+[observability.logs]
+enabled = true
+
+
+
