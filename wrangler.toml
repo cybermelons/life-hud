@@ -1,3 +1,24 @@
 name = "lilaya-pwa"
-compatibility_date = "2024-09-19"
-assets = { directory = "./" }
+compatibility_date = "2024-01-01"
+main = "worker.js"
+
+[site]
+bucket = "./"
+exclude = [
+  "node_modules",
+  ".git",
+  "*.md",
+  "package*.json",
+  "*.lock",
+  ".env*",
+  "wrangler.toml",
+  "supabase-migration.sql",
+  "docs"
+]
+
+# wrangler.toml (wrangler v3.88.0^)
+[observability.logs]
+enabled = true
+
+
+
