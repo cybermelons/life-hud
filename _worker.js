@@ -10,9 +10,9 @@ export default {
       '/library': '/library.html',
       '/mind': '/mind/index.html',
       '/body': '/body/index.html',
-      '/mind/feelings': '/mind/feelings/index.html',
-      '/body/senses': '/body/senses/index.html',
-      '/body/actions': '/body/actions/index.html'
+      '/mind/feelings': '/mind/feelings.html',
+      '/body/senses': '/body/senses.html',
+      '/body/actions': '/body/actions.html'
     };
     
     // Check if we have a specific route mapping

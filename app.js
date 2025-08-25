@@ -26,10 +26,15 @@ document.addEventListener('alpine:init', () => {
             // Auto-focus input when capture opens
             Alpine.effect(() => {
                 if (this.captureOpen) {
+                    // Wait for transition to complete
                     setTimeout(() => {
                         const input = document.querySelector('[x-ref="nutInput"]');
-                        if (input) input.focus();
-                    }, 100);
+                        if (input) {
+                            input.focus();
+                            // Also scroll into view on mobile
+                            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }, 250);
                 }
             });
         },

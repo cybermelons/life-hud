@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1e40af">
     <link rel="manifest" href="/manifest.json">
-    <title>Mind Kingdom - Lilaya</title>
+    <title>Feelings Hall - Mind Kingdom - Lilaya</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -30,87 +30,132 @@
 <body class="min-h-screen bg-gradient-to-br from-gray-900 via-blue-950 to-black text-white" x-data>
     
     <!-- Header -->
-    <header class="text-center py-6 px-4">
-        <h1 class="text-3xl font-bold text-blue-400 mb-2">Mind Kingdom</h1>
-        <p class="text-gray-400 text-sm">The Processing Layer - Where patterns form</p>
+    <header class="sticky top-0 bg-gray-900/95 backdrop-blur border-b border-blue-600/30 z-10">
+        <div class="flex items-center p-4">
+            <a href="/mind" class="text-blue-400">
+                <i class="ti ti-chevron-left text-xl"></i>
+            </a>
+            <h1 class="flex-1 text-center text-xl font-bold text-blue-400">Feelings Hall</h1>
+            <div class="w-6"></div>
+        </div>
     </header>
     
     <!-- Main Content -->
-    <main class="pb-32 px-4">
-        <!-- Kingdom Health -->
-        <div class="mb-6 p-4 bg-blue-900/30 border border-blue-600/50 rounded-lg">
-            <div class="flex justify-between items-center mb-2">
-                <span class="text-blue-400">Kingdom Health</span>
-                <span class="text-yellow-400">60% ⚠️</span>
-            </div>
-            <div class="w-full bg-gray-700 rounded-full h-2">
-                <div class="bg-gradient-to-r from-blue-500 to-yellow-500 h-2 rounded-full" style="width: 60%"></div>
-            </div>
-            <p class="text-xs text-yellow-400 mt-2">⚠️ Corruption detected in Feelings Hall</p>
+    <main class="pb-32 px-4 py-6">
+        <!-- Hall Description -->
+        <div class="text-center mb-6">
+            <div class="text-4xl mb-2">❤️</div>
+            <p class="text-gray-400 text-sm">Where emotions rise and fall</p>
         </div>
         
-        <!-- Zone Cards -->
+        <!-- Emotion Zones -->
         <div class="space-y-4">
-            <!-- Feelings Hall -->
-            <a href="/mind/feelings" class="block p-5 bg-blue-900/30 border border-blue-600/50 rounded-lg active:bg-blue-900/50">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <div class="text-2xl mb-2"><i class="ti ti-heart"></i></div>
-                        <h2 class="text-lg font-semibold text-blue-400">Feelings Hall</h2>
-                        <p class="text-xs text-gray-400 mt-1">Emotional reactions</p>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-sm text-gray-500" x-text="`${$store.app.getNutsByKingdom('mind').filter(n => n.zone === 'feelings').length} NUTs`"></div>
-                        <div class="text-xs text-yellow-400 mt-1">⚠️ Klesha detected</div>
-                    </div>
-                </div>
-            </a>
-            
-            <!-- Thoughts Hall (Locked) -->
-            <div class="block p-5 bg-blue-900/30 border border-blue-600/50 rounded-lg opacity-50">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <div class="text-2xl mb-2"><i class="ti ti-thought-bubble"></i></div>
-                        <h2 class="text-lg font-semibold text-blue-400">Thoughts Hall</h2>
-                        <p class="text-xs text-gray-400 mt-1">Mental patterns</p>
+            <!-- Anger Zone -->
+            <div class="p-5 bg-red-950/30 border border-red-600/50 rounded-lg">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-3">
+                        <i class="ti ti-mood-angry text-2xl text-red-400"></i>
+                        <div>
+                            <h2 class="text-lg font-semibold text-red-400">Anger</h2>
+                            <p class="text-xs text-gray-400">Heat & intensity</p>
+                        </div>
                     </div>
                     <div class="text-right">
                         <div class="text-sm text-gray-500">0 NUTs</div>
-                        <div class="text-xs text-gray-500 mt-1">🔒 Locked</div>
                     </div>
                 </div>
+                <button class="w-full py-2 bg-red-900/50 hover:bg-red-900/70 rounded text-sm transition-colors">
+                    Enter Zone →
+                </button>
+            </div>
+            
+            <!-- Sadness Zone -->
+            <div class="p-5 bg-blue-950/30 border border-blue-600/50 rounded-lg">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-3">
+                        <i class="ti ti-mood-sad text-2xl text-blue-400"></i>
+                        <div>
+                            <h2 class="text-lg font-semibold text-blue-400">Sadness</h2>
+                            <p class="text-xs text-gray-400">Depth & longing</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm text-gray-500">0 NUTs</div>
+                    </div>
+                </div>
+                <button class="w-full py-2 bg-blue-900/50 hover:bg-blue-900/70 rounded text-sm transition-colors">
+                    Enter Zone →
+                </button>
+            </div>
+            
+            <!-- Fear Zone -->
+            <div class="p-5 bg-purple-950/30 border border-purple-600/50 rounded-lg">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-3">
+                        <i class="ti ti-mood-nervous text-2xl text-purple-400"></i>
+                        <div>
+                            <h2 class="text-lg font-semibold text-purple-400">Fear</h2>
+                            <p class="text-xs text-gray-400">Shadows & uncertainty</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm text-gray-500">0 NUTs</div>
+                    </div>
+                </div>
+                <button class="w-full py-2 bg-purple-900/50 hover:bg-purple-900/70 rounded text-sm transition-colors">
+                    Enter Zone →
+                </button>
+            </div>
+            
+            <!-- Joy Zone -->
+            <div class="p-5 bg-yellow-950/30 border border-yellow-600/50 rounded-lg">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-3">
+                        <i class="ti ti-mood-smile text-2xl text-yellow-400"></i>
+                        <div>
+                            <h2 class="text-lg font-semibold text-yellow-400">Joy</h2>
+                            <p class="text-xs text-gray-400">Light & expansion</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm text-gray-500">0 NUTs</div>
+                    </div>
+                </div>
+                <button class="w-full py-2 bg-yellow-900/50 hover:bg-yellow-900/70 rounded text-sm transition-colors">
+                    Enter Zone →
+                </button>
+            </div>
+            
+            <!-- Disgust Zone -->
+            <div class="p-5 bg-green-950/30 border border-green-600/50 rounded-lg">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-3">
+                        <i class="ti ti-mood-confuzed text-2xl text-green-400"></i>
+                        <div>
+                            <h2 class="text-lg font-semibold text-green-400">Disgust</h2>
+                            <p class="text-xs text-gray-400">Rejection & boundaries</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm text-gray-500">0 NUTs</div>
+                    </div>
+                </div>
+                <button class="w-full py-2 bg-green-900/50 hover:bg-green-900/70 rounded text-sm transition-colors">
+                    Enter Zone →
+                </button>
             </div>
         </div>
         
-        <!-- Recent Activity -->
+        <!-- Quick Capture -->
         <div class="mt-6 p-4 bg-black/30 border border-blue-600/30 rounded-lg">
-            <h3 class="text-blue-400 text-sm mb-3">Recent NUTs (All Kingdoms)</h3>
-            <div x-show="$store.app.nuts.length === 0" class="text-gray-500 text-xs">
-                No NUTs captured yet. Tap + to start!
-            </div>
-            <div x-show="$store.app.nuts.length > 0" class="space-y-2">
-                <template x-for="nut in $store.app.nuts.slice(0, 5)" :key="nut.id">
-                    <div class="flex items-start gap-2 p-2 bg-gray-900/50 rounded">
-                        <i class="text-sm mt-0.5" :class="{
-                            'ti ti-note text-blue-400': nut.type === 'note',
-                            'ti ti-thought-bubble text-purple-400': nut.type === 'urge',
-                            'ti ti-checkbox text-green-400': nut.type === 'task'
-                        }[nut.type]"></i>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-xs text-gray-300 truncate" x-text="nut.content"></p>
-                            <p class="text-xs text-gray-500 mt-1">
-                                <span x-text="new Date(nut.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})"></span>
-                                <span x-show="nut.kingdom" class="ml-2">
-                                    → <span x-text="nut.kingdom" class="capitalize"></span>
-                                </span>
-                            </p>
-                        </div>
-                    </div>
-                </template>
-            </div>
-            <a href="/inventory" x-show="$store.app.nuts.length > 5" class="block text-center text-xs text-blue-400 mt-3">
-                View all <span x-text="$store.app.nuts.length"></span> NUTs →
-            </a>
+            <h3 class="text-blue-400 text-sm mb-2">Quick Feeling Capture</h3>
+            <p class="text-gray-500 text-xs mb-3">What are you feeling right now?</p>
+            <button 
+                @click="$store.app.captureOpen = true; $store.app.nutType = 'urge'"
+                class="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors"
+            >
+                <i class="ti ti-plus"></i> Capture Feeling
+            </button>
         </div>
     </main>
     

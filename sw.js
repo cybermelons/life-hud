@@ -1,5 +1,5 @@
 // Service Worker for Lilaya PWA
-const CACHE_NAME = 'lilaya-v3';
+const CACHE_NAME = 'lilaya-v4';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -9,10 +9,16 @@ const urlsToCache = [
   '/library.html',
   '/mind/index.html',
   '/body/index.html',
+  '/mind/feelings.html',
+  '/body/senses.html',
+  '/body/actions.html',
   '/mind',
   '/body',
   '/inventory',
   '/library',
+  '/mind/feelings',
+  '/body/senses',
+  '/body/actions',
   'https://cdn.tailwindcss.com',
   'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js',
   'https://cdn.jsdelivr.net/npm/@tabler/icons@latest/iconfont/tabler-icons.min.css',

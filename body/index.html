@@ -27,7 +27,7 @@
         }
     </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-green-900 to-green-800 text-white" x-data>
+<body class="min-h-screen bg-gradient-to-br from-gray-900 via-green-950 to-black text-white" x-data>
     
     <!-- Header -->
     <header class="text-center py-6 px-4">
@@ -83,17 +83,33 @@
         
         <!-- Recent Activity -->
         <div class="mt-6 p-4 bg-black/30 border border-green-600/30 rounded-lg">
-            <h3 class="text-green-400 text-sm mb-2">Recent Activity</h3>
-            <div x-show="$store.app.getNutsByKingdom('body').length === 0" class="text-gray-500 text-xs">
-                No recent NUTs in this kingdom
+            <h3 class="text-green-400 text-sm mb-3">Recent NUTs (All Kingdoms)</h3>
+            <div x-show="$store.app.nuts.length === 0" class="text-gray-500 text-xs">
+                No NUTs captured yet. Tap + to start!
             </div>
-            <div x-show="$store.app.getNutsByKingdom('body').length > 0" class="space-y-2">
-                <template x-for="nut in $store.app.getNutsByKingdom('body').slice(0, 3)" :key="nut.id">
-                    <div class="text-xs text-gray-400">
-                        <span x-text="nut.content.substring(0, 50) + '...'"></span>
+            <div x-show="$store.app.nuts.length > 0" class="space-y-2">
+                <template x-for="nut in $store.app.nuts.slice(0, 5)" :key="nut.id">
+                    <div class="flex items-start gap-2 p-2 bg-gray-900/50 rounded">
+                        <i class="text-sm mt-0.5" :class="{
+                            'ti ti-note text-blue-400': nut.type === 'note',
+                            'ti ti-thought-bubble text-purple-400': nut.type === 'urge',
+                            'ti ti-checkbox text-green-400': nut.type === 'task'
+                        }[nut.type]"></i>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs text-gray-300 truncate" x-text="nut.content"></p>
+                            <p class="text-xs text-gray-500 mt-1">
+                                <span x-text="new Date(nut.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})"></span>
+                                <span x-show="nut.kingdom" class="ml-2">
+                                    → <span x-text="nut.kingdom" class="capitalize"></span>
+                                </span>
+                            </p>
+                        </div>
                     </div>
                 </template>
             </div>
+            <a href="/inventory" x-show="$store.app.nuts.length > 5" class="block text-center text-xs text-green-400 mt-3">
+                View all <span x-text="$store.app.nuts.length"></span> NUTs →
+            </a>
         </div>
     </main>
     
@@ -137,6 +153,15 @@
         class="fixed bottom-0 left-0 right-0 bg-gray-900 border-t-2 border-green-600 p-4 safe-bottom"
         style="padding-bottom: calc(1rem + env(safe-area-inset-bottom))"
     >
+        <!-- Close Button -->
+        <button 
+            @click="$store.app.captureOpen = false"
+            type="button"
+            class="absolute top-2 right-2 text-gray-400 hover:text-white p-2"
+        >
+            <i class="ti ti-x text-xl"></i>
+        </button>
+        
         <form @submit.prevent="$store.app.addNut()">
             <!-- Type Selector -->
             <div class="flex gap-2 mb-3">

@@ -144,6 +144,15 @@
         class="fixed bottom-0 left-0 right-0 bg-gray-900 border-t-2 border-blue-600 p-4 safe-bottom"
         style="padding-bottom: calc(1rem + env(safe-area-inset-bottom))"
     >
+        <!-- Close Button -->
+        <button 
+            @click="$store.app.captureOpen = false"
+            type="button"
+            class="absolute top-2 right-2 text-gray-400 hover:text-white p-2"
+        >
+            <i class="ti ti-x text-xl"></i>
+        </button>
+        
         <form @submit.prevent="$store.app.addNut()">
             <!-- Type Selector -->
             <div class="flex gap-2 mb-3">
