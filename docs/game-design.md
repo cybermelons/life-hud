@@ -1,5 +1,37 @@
 # Life HUD as Modular NUT Journaling Mind Palace - Game Design
 
+## World Overview
+
+**LILAYA: Consciousness-Mapping Game**
+
+Real-life micro-journaling feeds a kingdom that IS your consciousness architecture.
+
+**Core Loop**
+1. **micro-journal Log life moments**: Event → Feeling → Your reaction choice
+2. **Creates NUTs** (Notes/thoughts, Urges/feelings, Tasks/actions) that import into kingdom
+3. **Identify tainted NUTs** (destructive patterns) before corruption spreads
+4. **CBT combat** to purify corrupted elements
+5. **Build wisdom archive** of successful strategies for future struggles
+
+**Samsara Kingdom Structure**
+- Outer ring: World/objects
+- Layer 1: Body 
+- Layer 2: Senses
+- Layer 3: Mind
+- Hidden: Emperor/Atman (final revelation)
+
+**Key Systems**
+
+*Memory System*: Track what worked. Kingdom stores your victories as accessible "Totems" showing how you overcame specific struggles.
+
+*Kama Corruption*: Untreated tainted NUTs cause kingdom chaos, teaching non-attachment through visible consequences.
+
+*Pattern Recognition*: Insights manifest as affecting mechanics and visuals in the kingdom.
+
+*Progression*: Scout → Guardian → Emperor (discovering you were always the ruler)
+
+The game makes mental hygiene visible as kingdom health while preserving your resilience patterns for future reference.
+
 ## Core Concept Evolution
 Transform the hierarchical system into a modular journaling platform where exploration unlocks tagging zones for NUT entries. Players build their personalized mind palace through discovery and guild customization.
 
@@ -46,7 +78,32 @@ Location: Stored in /body/actions/muscles/bicep
 - **Requirements**: Some zones need prerequisites (e.g., log 10 body NUTs to unlock deeper body zones)
 - **Achievements**: Unlock special zones through consistent practice
 
-## Guild System (Custom Tag Trees)
+#### Example Unlock Requirements
+
+**Early Unlocks (Tutorial Flow):**
+- Body/Senses → Unlocked from start
+- Body/Actions → Unlocked from start  
+- Mind/Thoughts → Unlocked from start
+- Mind/Feelings → Unlock after 3 NUTs
+
+**Mid-Game Unlocks:**
+- Body/Senses/Taste → Log 1 meal or drink
+- Body/Actions/Muscles → Log 1 workout or physical task
+- Mind/Thoughts/Observations → Log 5 notes
+- Mind/Feelings/Complex → Experience 3 different primary emotions
+
+**Late-Game Unlocks:**
+- Spirit Kingdom → 10 total NUTs OR 7-day streak OR complete onboarding
+- Body/Actions/Reproduction → Age gate + 20 body NUTs
+- Mind/Thoughts/Memories → 10 notes + identify 1 pattern
+- Spirit/Purpose → Complete self-reflection quest
+
+**Special Unlocks:**
+- Secret zones via easter eggs
+- Guild-specific zones when joining a guild
+- Seasonal zones during events
+
+## Guild System (Life Role Encapsulation)
 
 ### Spirit Layer Functions
 The `/spirit/` directory becomes the meta-game layer:
@@ -72,8 +129,16 @@ The `/spirit/` directory becomes the meta-game layer:
    - Personal stat weights
    - Progress metrics
 
+### Guild Concept
+A guild represents a cohesive life role or identity that encapsulates:
+1. **Stat Tree**: Hierarchical tags tracking attributes/skills relevant to that role
+2. **Rituals**: Recurring tasks/practices that maintain and develop that role
+3. **Campaigns**: Time tracking for activities related to that role
+
+This aligns with Vedantic/Samkhya yogic philosophy - each guild is like a dharma or life path we embody.
+
 ### Guild Establishment
-Guilds are custom tag hierarchies players create or clone:
+Guilds are life roles players create or clone:
 
 #### Guild Types (Examples)
 1. **Warrior Guild**
@@ -111,6 +176,151 @@ interface Guild {
 // - Share guilds with others
 // - Multi-class (belong to multiple guilds)
 ```
+
+## Kingdom Navigation Design
+
+### Three Kingdoms Structure (from Lilaya lore)
+Based on the yogic philosophy layers from the Samsara kingdom:
+
+1. **Outer Kingdom** (`/body`) - Physical interface with world
+   - Represents action and sensory experience (Tamas/stability)
+   - Where orders are carried out and resources gathered
+   - Home to farmers, soldiers, laborers
+
+2. **Middle Kingdom** (`/mind`) - Thoughts and feelings  
+   - Represents thought and feeling processes (Rajas/energy)
+   - Where decisions are implemented through systems
+   - Home to merchants, craftspeople, administrators
+
+3. **Inner Kingdom** (`/spirit`) - Pure awareness [LOCKED]
+   - Center of awareness and decision-making (Sattva/clarity)
+   - Where policy and high-level decisions are made
+   - Home to royalty, scholars, spiritual leaders
+
+### Navigation Philosophy
+- **Simple page-to-page movement** like Persona or dating sims
+- Each page is a **location in the kingdom** you visit
+- **Index page = Kingdom Gates/Overview** - Where you choose which kingdom to enter
+- **Breadcrumbs = Your path** through the palace
+- **/sitemap** = Full development map (moved from index)
+
+### Game Loop
+1. **Start at Kingdom Gates** (index) - See three kingdoms' health/activity
+2. **Enter a Kingdom** - Navigate to /body, /mind, or /spirit
+3. **Explore Locations** - Each subpage is a room/area to visit
+4. **Capture NUTs** - Using expandable journal/inventory panel
+5. **Build Experience** - NUTs get stored in current location
+6. **Unlock Deeper Areas** - Through consistent practice
+
+### Exploration & Progression Design (Pokemon-inspired)
+
+#### Visible but Blocked
+Like Pokemon's Indigo Plateau or sleeping Snorlax, players can SEE locked areas but need to meet requirements:
+
+- **Spirit Kingdom** visible from start but requires "10 NUTs" (like needing 8 badges)
+- **Body/Actions/Reproduction** visible but needs "maturity level" or specific unlock
+- **Mind/Thoughts/Memories** visible but needs "5 observation NUTs" first
+- Each locked zone shows:
+  - What it contains (preview/description)
+  - Why it's locked (requirement)
+  - Progress toward unlock (3/10 NUTs)
+
+#### Non-Linear Progression
+Unlike Pokemon's strict gym order, multiple paths available:
+
+- Can start with Body OR Mind exploration
+- Within Body, can focus on Senses OR Actions
+- Some zones have multiple unlock paths:
+  - Spirit unlocks via: 10 total NUTs OR complete a 7-day streak OR finish tutorial quest
+  - Advanced zones unlock via: quantity (10 NUTs) OR quality (identify 3 patterns) OR time (3 days active)
+
+#### Mechanical Engagement Creates Progress
+Progression comes from using the system, not grinding:
+
+- **Logging NUTs** = Experience points
+- **Identifying patterns** = Skill development  
+- **Maintaining streaks** = Discipline training
+- **Exploring zones** = Map discovery
+- **Reacting to NUTs** = Emotional intelligence
+- **Tagging correctly** = Organizational mastery
+
+#### Teasing Future Content
+Show glimpses of what's coming:
+
+- Locked zones display grayed-out preview: "🔒 Inner Sanctum - Where purpose aligns with action"
+- Hovering shows requirements: "Unlock by reaching Middle Kingdom first"
+- NPCs/Hints reference locked areas: "I heard the Spirit Temple has powerful meditation techniques..."
+- Partial visibility: Can see zone name and icon but not enter
+
+### NUT Capture Panel (Inventory System)
+Expandable panel like Toggl Track that slides up from bottom:
+
+**Collapsed State:**
+- Minimal bar with quick capture input
+- Type selector (Note/Urge/Task)
+- Expand button
+
+**Expanded State (MTG Card-like):**
+- Full capture form with rich fields
+- Time adjustment
+- Tag selection (based on unlocked zones)
+- Zone assignment (where to store the NUT)
+- Recurrence settings
+- Quick reactions/mood
+- Preview of how NUT will appear
+
+Always accessible while navigating the kingdom, like carrying a journal.
+
+### Core NUT Offering Gameplay Loop
+
+1. **Capture Phase**
+   - Log NUT via always-present NUT bar
+   - NUT enters inventory (unassigned)
+   - Can accumulate multiple NUTs before offering
+
+2. **Exploration Phase**
+   - Navigate kingdom zones
+   - Each zone has different "appetite" for NUT types
+   - Visual indicators show zone health/hunger
+
+3. **Notification Phase**
+   - Zones recognize compatible NUTs in inventory
+   - Display notification: "The Training Grounds sense your physical experience"
+   - Creates engagement opportunity
+
+4. **Dialog Phase**
+   - Simple dialog with zone entity/guardian
+   - Entity explains their need/desire for the NUT
+   - Lore-building about why this NUT belongs here
+
+5. **Offering Phase**
+   - Player chooses to offer NUT or keep it
+   - Offering animation/ritual
+   - NUT transforms from inventory item to zone resource
+
+6. **Storage Phase**
+   - NUT permanently stored in zone
+   - Zone health increases
+   - Relationship progress
+   - Possible unlocks or rewards
+
+### Totem Formation (Manual Process)
+
+**No Automatic Pattern Recognition** - Player has full control:
+
+1. **Collection**: Gather multiple related NUTs in inventory
+2. **Selection**: Manually choose which NUTs to chain
+3. **Intention**: Define what the totem represents
+4. **Ritual**: Use discovered sealing components
+5. **Placement**: Choose where totem lives
+6. **Maintenance**: Regular practice keeps totem active
+
+Example:
+- Player collects: "went to gym", "felt strong", "leg day done"
+- Manually chains them together
+- Names it: "Strength Training Totem"
+- Places in /body/actions/muscles
+- Must log workout NUTs weekly to maintain
 
 ## Implementation Architecture
 
@@ -150,31 +360,41 @@ interface PlayerProfile {
 }
 ```
 
-### Page Updates
+### Page Structure
 
-1. **Zone Pages** (`/body/*/`, `/mind/*/`)
-   - Add NUT input form specific to that zone
+1. **Index Page** (`/`) - Kingdom Gates
+   - Three kingdoms overview (Outer/Middle/Inner)
+   - Kingdom health indicators
+   - Recent activity summary
+   - Entry points to each kingdom
+   - Quick link to full sitemap
+
+2. **Kingdom Pages** (`/body`, `/mind`, `/spirit`)
+   - Kingdom description and current state
+   - Child locations as navigation options
+   - Zone-specific NUTs display
+   - Health/corruption meters
+   - Breadcrumb navigation
+
+3. **Zone Pages** (`/body/*/`, `/mind/*/`)
+   - Location-specific theming and description
+   - NUT input form specific to that zone
    - Display NUTs tagged to this zone
    - Show zone health/corruption
    - Unlock requirements if not discovered
+   - Navigation to child zones
 
-2. **Index Page** (`/`)
-   - Mind palace overview map
-   - Quick NUT input with tag selector
-   - Recently active zones highlighted
-   - Discovery progress indicator
+4. **Sitemap** (`/sitemap`) - Development View
+   - Complete hierarchical view of all zones
+   - Quick access to any location
+   - Debug information and stats
+   - Locked/unlocked status overview
 
-3. **Spirit Pages** (`/spirit/*/`)
+5. **Spirit Pages** (`/spirit/*/`) [LOCKED]
    - Guild management interface
    - Value/goal alignment tools
    - Stats configuration
    - Sadhana scheduling
-
-4. **HUD Dashboard** (`/hud`)
-   - Real-time zone health
-   - Active guild buffs/effects
-   - NUT stream with tags
-   - Pattern detection alerts
 
 ### New Features
 
@@ -204,10 +424,35 @@ interface PlayerProfile {
 
 ## Progression Flow
 
-1. **Early Game**: Basic NUT logging, discover body/mind zones
-2. **Mid Game**: Unlock specialized zones, identify patterns, manage corruption
-3. **Late Game**: Create guilds, optimize tag trees, achieve Emperor status
-4. **Meta Game**: Share guilds, compete in challenges, teach others
+### Early Game - Basic NUTting
+- Player explores kingdom with NUT bar
+- Captures NUTs throughout the day (Twitter-style quick logging)
+- Offers NUTs to zones through dialog interactions
+- Builds relationships with zones
+- Unlocks new areas through consistent engagement
+
+### Mid Game - Kama Detection (Silph Scope Moment)
+- Complete "The Sight Beyond" quest to unlock Kama vision
+- Can now identify corruption/kama in captured NUTs
+- Corrupted NUTs appear with visual indicators (red/purple glow)
+- Must decide whether to offer tainted NUTs or purify them first
+- Adds risk/reward to NUT offerings
+
+### Late Game - Totem Creation
+- Discover sealing ritual components scattered across kingdom
+- Each kingdom holds ritual knowledge:
+  - Body: "Form" component (physical manifestation)
+  - Mind: "Intent" component (purpose and meaning)
+  - Spirit: "Binding" component (permanence)
+- Player manually chains NUTs together (no AI pattern recognition)
+- Creates totems that represent commitments/habits
+- Places totems in zones for permanent buffs
+- Must maintain totems through regular practice or they decay
+
+### Meta Game
+- Share custom guilds and totems with other players
+- Compete in challenges
+- Teach others your discovered rituals
 
 ## Key Innovations
 
@@ -244,3 +489,5 @@ Each NUT type requires different purification strategies:
 - Pattern recognition reveals corruption sources
 
 This design maintains Lilaya's core NUT philosophy while adding exploration, customization, and progression layers that make journaling feel like adventure.
+
+

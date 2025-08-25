@@ -1,5 +1,3 @@
-name = "life-hud"
-compatibility_date = "2024-01-01"
-
-[site]
-bucket = "./dist"
+name = "lilaya-pwa"
+compatibility_date = "2024-09-19"
+assets = { directory = "./" }

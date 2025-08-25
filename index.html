@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    <link rel="manifest" href="/manifest.json">
+    <title>Lilaya - Kingdom Gates</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Tabler Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/iconfont/tabler-icons.min.css">
+    
+    <style>
+        /* Mobile-first custom styles */
+        .safe-bottom {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        
+        /* Prevent pull-to-refresh on mobile */
+        body {
+            overscroll-behavior-y: contain;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-black text-white" x-data="app">
+    
+    <!-- Main Content -->
+    <main class="pb-32">
+        <!-- Header -->
+        <div class="text-center py-8 px-4">
+            <h1 class="text-4xl font-bold mb-2">LILAYA</h1>
+            <p class="text-gray-400">Kingdom Gates</p>
+        </div>
+        
+        <!-- Kingdom Map -->
+        <div class="px-4 space-y-4">
+            <!-- Spirit Kingdom (Locked) -->
+            <div class="opacity-50">
+                <div class="p-6 border-2 border-dashed border-purple-600/50 rounded-lg bg-purple-900/20">
+                    <div class="text-3xl mb-2"><i class="ti ti-lock"></i></div>
+                    <h2 class="text-lg font-semibold text-purple-400">Spirit Kingdom</h2>
+                    <p class="text-sm text-gray-500">Locked - Requires 10 NUTs</p>
+                </div>
+            </div>
+            
+            <!-- Mind Kingdom -->
+            <a href="/mind" class="block p-6 border-2 border-blue-600 rounded-lg bg-blue-900/30 active:bg-blue-900/50">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-3xl mb-2"><i class="ti ti-brain"></i></div>
+                        <h2 class="text-lg font-semibold text-blue-400">Mind Kingdom</h2>
+                        <p class="text-sm text-gray-400">Thoughts & Feelings</p>
+                    </div>
+                    <div class="text-2xl"><i class="ti ti-chevron-right"></i></div>
+                </div>
+            </a>
+            
+            <!-- Body Kingdom -->
+            <a href="/body" class="block p-6 border-2 border-green-600 rounded-lg bg-green-900/30 active:bg-green-900/50">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-3xl mb-2"><i class="ti ti-heart-rate-monitor"></i></div>
+                        <h2 class="text-lg font-semibold text-green-400">Body Kingdom</h2>
+                        <p class="text-sm text-gray-400">Senses & Actions</p>
+                    </div>
+                    <div class="text-2xl"><i class="ti ti-chevron-right"></i></div>
+                </div>
+            </a>
+        </div>
+        
+        <!-- Stats Overview -->
+        <div class="px-4 mt-8" x-show="$store.app.nuts.length > 0">
+            <div class="bg-gray-900/50 rounded-lg p-4">
+                <h3 class="text-sm text-gray-400 mb-2">Today's Captures</h3>
+                <div class="text-2xl font-bold" x-text="$store.app.getTodayCount()"></div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 safe-bottom">
+        <div class="grid grid-cols-3 h-16">
+            <a href="/" class="flex flex-col items-center justify-center text-yellow-400">
+                <i class="ti ti-building-castle text-xl"></i>
+                <span class="text-xs">Kingdoms</span>
+            </a>
+            <a href="/inventory" class="flex flex-col items-center justify-center text-gray-400">
+                <i class="ti ti-package text-xl"></i>
+                <span class="text-xs">Inventory</span>
+            </a>
+            <a href="/library" class="flex flex-col items-center justify-center text-gray-400">
+                <i class="ti ti-books text-xl"></i>
+                <span class="text-xs">Library</span>
+            </a>
+        </div>
+    </nav>
+    
+    <!-- NUT Capture Button (FAB style) -->
+    <button 
+        @click="$store.app.captureOpen = !$store.app.captureOpen"
+        class="fixed bottom-20 right-4 w-14 h-14 bg-blue-600 rounded-full shadow-lg flex items-center justify-center text-2xl safe-bottom"
+        :class="{ 'rotate-45': $store.app.captureOpen }"
+        style="transition: transform 0.2s"
+    >
+        +
+    </button>
+    
+    <!-- NUT Capture Panel -->
+    <div 
+        x-show="$store.app.captureOpen"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="translate-y-full"
+        x-transition:enter-end="translate-y-0"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="translate-y-0"
+        x-transition:leave-end="translate-y-full"
+        class="fixed bottom-0 left-0 right-0 bg-gray-900 border-t-2 border-blue-600 p-4 safe-bottom"
+        style="padding-bottom: calc(1rem + env(safe-area-inset-bottom))"
+    >
+        <!-- Close Button -->
+        <button 
+            @click="$store.app.captureOpen = false"
+            type="button"
+            class="absolute top-2 right-2 text-gray-400 hover:text-white p-2"
+        >
+            <i class="ti ti-x text-xl"></i>
+        </button>
+        
+        <form @submit.prevent="$store.app.addNut()">
+            <!-- Type Selector -->
+            <div class="flex gap-2 mb-3">
+                <button 
+                    type="button"
+                    @click="$store.app.nutType = 'note'"
+                    :class="$store.app.nutType === 'note' ? 'bg-blue-600' : 'bg-gray-700'"
+                    class="flex-1 py-2 px-3 rounded-lg"
+                >
+                    <i class="ti ti-note"></i> Note
+                </button>
+                <button 
+                    type="button"
+                    @click="$store.app.nutType = 'urge'"
+                    :class="$store.app.nutType === 'urge' ? 'bg-blue-600' : 'bg-gray-700'"
+                    class="flex-1 py-2 px-3 rounded-lg"
+                >
+                    <i class="ti ti-thought-bubble"></i> Urge
+                </button>
+                <button 
+                    type="button"
+                    @click="$store.app.nutType = 'task'"
+                    :class="$store.app.nutType === 'task' ? 'bg-blue-600' : 'bg-gray-700'"
+                    class="flex-1 py-2 px-3 rounded-lg"
+                >
+                    <i class="ti ti-checkbox"></i> Task
+                </button>
+            </div>
+            
+            <!-- Input Field -->
+            <div class="flex gap-2">
+                <input 
+                    type="text"
+                    x-model="$store.app.nutContent"
+                    placeholder="What's on your mind?"
+                    class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-600"
+                    x-ref="nutInput"
+                    @keydown.escape="$store.app.captureOpen = false"
+                >
+                <button 
+                    type="submit"
+                    class="bg-blue-600 px-6 py-3 rounded-lg font-semibold"
+                    :disabled="!$store.app.nutContent.trim()"
+                >
+                    Save
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- App JavaScript -->
+    <script src="/app.js"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                console.log('ServiceWorker registered:', registration);
+            }).catch(function(error) {
+                console.log('ServiceWorker registration failed:', error);
+            });
+        }
+    </script>
+</body>
+</html>

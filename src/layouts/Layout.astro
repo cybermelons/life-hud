@@ -1,0 +1,81 @@
+---
+import '../styles/global.css';
+
+export interface Props {
+  title: string;
+  zone?: 'body' | 'mind' | 'spirit' | 'neutral';
+}
+
+const { title, zone = 'neutral' } = Astro.props;
+
+const zoneColors = {
+  body: 'from-green-900 to-green-800',
+  mind: 'from-blue-900 to-blue-800',
+  spirit: 'from-purple-900 to-purple-800',
+  neutral: 'from-gray-900 to-gray-800'
+};
+
+const zoneBorderColors = {
+  body: 'border-green-600',
+  mind: 'border-blue-600',
+  spirit: 'border-purple-600',
+  neutral: 'border-gray-600'
+};
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+  </head>
+  <body class="min-h-screen bg-gradient-to-br {zoneColors[zone]} text-white">
+    <!-- Top Navigation Bar -->
+    <nav class="bg-black/30 backdrop-blur-sm border-b {zoneBorderColors[zone]} sticky top-0 z-50">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center space-x-8">
+            <a href="/" class="text-xl font-bold hover:text-gray-300 transition">Life HUD</a>
+            <div class="flex space-x-6">
+              <a href="/body" class="hover:text-green-400 transition">Body</a>
+              <a href="/mind" class="hover:text-blue-400 transition">Mind</a>
+              <a href="/spirit" class="hover:text-purple-400 transition">Spirit</a>
+              <a href="/hud" class="hover:text-yellow-400 transition">HUD</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+      <slot />
+    </main>
+
+    <!-- NUT Bar (Always Present) -->
+    <div class="fixed bottom-0 left-0 right-0 bg-black/50 backdrop-blur-lg border-t {zoneBorderColors[zone]} p-4">
+      <div class="container mx-auto">
+        <div class="flex items-center space-x-4">
+          <select class="bg-black/30 border border-gray-600 rounded px-3 py-2 text-sm">
+            <option value="note">📝 Note</option>
+            <option value="urge">💭 Urge</option>
+            <option value="task">✅ Task</option>
+          </select>
+          <input 
+            type="text" 
+            placeholder="Quick capture... (Ctrl+N)" 
+            class="flex-1 bg-black/30 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-gray-400 transition"
+          />
+          <button class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg transition">
+            Capture
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom padding to account for NUT bar -->
+    <div class="h-20"></div>
+  </body>
+</html>

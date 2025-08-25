@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1e40af">
+    <link rel="manifest" href="/manifest.json">
+    <title>Mind Kingdom - Lilaya</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Tabler Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/iconfont/tabler-icons.min.css">
+    
+    <style>
+        .safe-bottom {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        body {
+            overscroll-behavior-y: contain;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-gray-900 via-blue-950 to-black text-white" x-data>
+    
+    <!-- Header -->
+    <header class="text-center py-6 px-4">
+        <h1 class="text-3xl font-bold text-blue-400 mb-2">Mind Kingdom</h1>
+        <p class="text-gray-400 text-sm">The Processing Layer - Where patterns form</p>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="pb-32 px-4">
+        <!-- Kingdom Health -->
+        <div class="mb-6 p-4 bg-blue-900/30 border border-blue-600/50 rounded-lg">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-blue-400">Kingdom Health</span>
+                <span class="text-yellow-400">60% ⚠️</span>
+            </div>
+            <div class="w-full bg-gray-700 rounded-full h-2">
+                <div class="bg-gradient-to-r from-blue-500 to-yellow-500 h-2 rounded-full" style="width: 60%"></div>
+            </div>
+            <p class="text-xs text-yellow-400 mt-2">⚠️ Corruption detected in Feelings Hall</p>
+        </div>
+        
+        <!-- Zone Cards -->
+        <div class="space-y-4">
+            <!-- Feelings Hall -->
+            <a href="/mind/feelings" class="block p-5 bg-blue-900/30 border border-blue-600/50 rounded-lg active:bg-blue-900/50">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-2xl mb-2"><i class="ti ti-heart"></i></div>
+                        <h2 class="text-lg font-semibold text-blue-400">Feelings Hall</h2>
+                        <p class="text-xs text-gray-400 mt-1">Emotional reactions</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm text-gray-500" x-text="`${$store.app.getNutsByKingdom('mind').filter(n => n.zone === 'feelings').length} NUTs`"></div>
+                        <div class="text-xs text-yellow-400 mt-1">⚠️ Klesha detected</div>
+                    </div>
+                </div>
+            </a>
+            
+            <!-- Thoughts Hall (Locked) -->
+            <div class="block p-5 bg-blue-900/30 border border-blue-600/50 rounded-lg opacity-50">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-2xl mb-2"><i class="ti ti-thought-bubble"></i></div>
+                        <h2 class="text-lg font-semibold text-blue-400">Thoughts Hall</h2>
+                        <p class="text-xs text-gray-400 mt-1">Mental patterns</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm text-gray-500">0 NUTs</div>
+                        <div class="text-xs text-gray-500 mt-1">🔒 Locked</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Activity -->
+        <div class="mt-6 p-4 bg-black/30 border border-blue-600/30 rounded-lg">
+            <h3 class="text-blue-400 text-sm mb-3">Recent NUTs (All Kingdoms)</h3>
+            <div x-show="$store.app.nuts.length === 0" class="text-gray-500 text-xs">
+                No NUTs captured yet. Tap + to start!
+            </div>
+            <div x-show="$store.app.nuts.length > 0" class="space-y-2">
+                <template x-for="nut in $store.app.nuts.slice(0, 5)" :key="nut.id">
+                    <div class="flex items-start gap-2 p-2 bg-gray-900/50 rounded">
+                        <i class="text-sm mt-0.5" :class="{
+                            'ti ti-note text-blue-400': nut.type === 'note',
+                            'ti ti-thought-bubble text-purple-400': nut.type === 'urge',
+                            'ti ti-checkbox text-green-400': nut.type === 'task'
+                        }[nut.type]"></i>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs text-gray-300 truncate" x-text="nut.content"></p>
+                            <p class="text-xs text-gray-500 mt-1">
+                                <span x-text="new Date(nut.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})"></span>
+                                <span x-show="nut.kingdom" class="ml-2">
+                                    → <span x-text="nut.kingdom" class="capitalize"></span>
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </template>
+            </div>
+            <a href="/inventory" x-show="$store.app.nuts.length > 5" class="block text-center text-xs text-blue-400 mt-3">
+                View all <span x-text="$store.app.nuts.length"></span> NUTs →
+            </a>
+        </div>
+    </main>
+    
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 safe-bottom">
+        <div class="grid grid-cols-3 h-16">
+            <a href="/" class="flex flex-col items-center justify-center text-gray-400">
+                <i class="ti ti-building-castle text-xl"></i>
+                <span class="text-xs">Kingdoms</span>
+            </a>
+            <a href="/inventory" class="flex flex-col items-center justify-center text-gray-400">
+                <i class="ti ti-package text-xl"></i>
+                <span class="text-xs">Inventory</span>
+            </a>
+            <a href="/library" class="flex flex-col items-center justify-center text-gray-400">
+                <i class="ti ti-books text-xl"></i>
+                <span class="text-xs">Library</span>
+            </a>
+        </div>
+    </nav>
+    
+    <!-- NUT Capture Button (FAB style) -->
+    <button 
+        @click="$store.app.captureOpen = !$store.app.captureOpen"
+        class="fixed bottom-20 right-4 w-14 h-14 bg-blue-600 rounded-full shadow-lg flex items-center justify-center text-2xl safe-bottom"
+        :class="{ 'rotate-45': $store.app.captureOpen }"
+        style="transition: transform 0.2s"
+    >
+        +
+    </button>
+    
+    <!-- NUT Capture Panel -->
+    <div 
+        x-show="$store.app.captureOpen"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="translate-y-full"
+        x-transition:enter-end="translate-y-0"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="translate-y-0"
+        x-transition:leave-end="translate-y-full"
+        class="fixed bottom-0 left-0 right-0 bg-gray-900 border-t-2 border-blue-600 p-4 safe-bottom"
+        style="padding-bottom: calc(1rem + env(safe-area-inset-bottom))"
+    >
+        <!-- Close Button -->
+        <button 
+            @click="$store.app.captureOpen = false"
+            type="button"
+            class="absolute top-2 right-2 text-gray-400 hover:text-white p-2"
+        >
+            <i class="ti ti-x text-xl"></i>
+        </button>
+        
+        <form @submit.prevent="$store.app.addNut()">
+            <!-- Type Selector -->
+            <div class="flex gap-2 mb-3">
+                <button 
+                    type="button"
+                    @click="$store.app.nutType = 'note'"
+                    :class="$store.app.nutType === 'note' ? 'bg-blue-600' : 'bg-gray-700'"
+                    class="flex-1 py-2 px-3 rounded-lg"
+                >
+                    <i class="ti ti-note"></i> Note
+                </button>
+                <button 
+                    type="button"
+                    @click="$store.app.nutType = 'urge'"
+                    :class="$store.app.nutType === 'urge' ? 'bg-blue-600' : 'bg-gray-700'"
+                    class="flex-1 py-2 px-3 rounded-lg"
+                >
+                    <i class="ti ti-thought-bubble"></i> Urge
+                </button>
+                <button 
+                    type="button"
+                    @click="$store.app.nutType = 'task'"
+                    :class="$store.app.nutType === 'task' ? 'bg-blue-600' : 'bg-gray-700'"
+                    class="flex-1 py-2 px-3 rounded-lg"
+                >
+                    <i class="ti ti-checkbox"></i> Task
+                </button>
+            </div>
+            
+            <!-- Input Field -->
+            <div class="flex gap-2">
+                <input 
+                    type="text"
+                    x-model="$store.app.nutContent"
+                    placeholder="What's on your mind?"
+                    class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-600"
+                    x-ref="nutInput"
+                    @keydown.escape="$store.app.captureOpen = false"
+                >
+                <button 
+                    type="submit"
+                    class="bg-blue-600 px-6 py-3 rounded-lg font-semibold"
+                    :disabled="!$store.app.nutContent.trim()"
+                >
+                    Save
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- App JavaScript -->
+    <script src="/app.js"></script>
+</body>
+</html>
