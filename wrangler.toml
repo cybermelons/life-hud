@@ -1,4 +1,4 @@
-name = "lilaya-pwa"
+name = "life-hud"
 compatibility_date = "2024-01-01"
 main = "_worker.js"
 
