@@ -1,5 +1,20 @@
 name = "life-hud"
 compatibility_date = "2024-01-01"
+pages_build_output_dir = "./"
 
-[site]
-bucket = "./dist"
+# Static assets configuration
+assets = { directory = "./", binding = "ASSETS" }
+
+# Exclude patterns for deployment
+[env.production]
+exclude = [
+  "node_modules",
+  ".git",
+  "*.md",
+  "package*.json",
+  "*.lock",
+  ".env*",
+  "wrangler.toml",
+  "supabase-migration.sql",
+  "docs"
+]
