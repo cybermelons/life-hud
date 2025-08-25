@@ -2,11 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(sed:*)",
-      "Bash(git add:*)",
-      "Bash(mkdir:*)",
-      "Bash(cp:*)",
-      "Bash(git commit:*)",
-      "Bash(git checkout:*)"
+      "Bash(git add:*)"
     ],
     "additionalDirectories": [
       "/Users/cybermelon/Documents/GitHub/lilaya-wikijs/"
