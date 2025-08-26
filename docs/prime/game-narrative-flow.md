@@ -22,7 +22,8 @@ You play as a **rookie NUT Inspector** stationed in the Lower Kingdom. Your offi
 - Some NUTs arrive "corrupted" by mysterious outer-world poison called **Kama**
 - Corrupted NUTs (labeled **Klesha**) are dangerous waste products
 - Kleshas are disposed of in toxic dumps or fed to prisoners
-- Kama are foreign invaders that somehow spawn from corruption
+- ~~Kama are foreign invaders that somehow spawn from corruption~~
+- Kama are thought to be foreign demons terrorizing the town for evil
 
 ### The Truth You Discover
 The kingdom's disposal methods are making things **worse**:
@@ -87,12 +88,15 @@ becoming a permanent Totem - a monument to properly channeled desire.
 and I'll help you purify every Klesha in the kingdom..."
 ```
 
-## The Living Relationship
+## The Living Relationship (Totem)
 
 Tamed Kama aren't destroyed - they're your **devoted companions**:
+Their totem is held by a trusted authority, typically a guild, where
+the monstergirl hangs out causing no trouble.
+Kinda like she's bound to it.
 
 ### While Maintained
-- They actively help identify similar corruptions
+- Provide consistent stats/resources from totem
 - Provide resistance against their corruption type
 - Whisper sweet encouragements during inspections
 - "Master, there's another one like me nearby... shall we extract her together?"
@@ -103,7 +107,7 @@ Tamed Kama aren't destroyed - they're your **devoted companions**:
 - Eventually revert to corrupting NUTs again
 - "You haven't satisfied me in days... I'm so hungry... I might do something bad..."
 
-## The Underground Movement
+## The Underground Movement (tentative, WIP)
 
 You're not alone in this discovery:
 
