@@ -47,12 +47,14 @@ document.addEventListener('alpine:init', () => {
                 }
             }
             
-            // Check if this is a successful email auth callback
+            // Check if this is a successful auth callback
             const accessToken = hashParams.get('access_token');
-            if (accessToken) {
-                console.log('Email auth successful, token found');
-                // Clean up URL
-                window.history.replaceState({}, document.title, window.location.pathname);
+            const refreshToken = hashParams.get('refresh_token');
+            
+            if (accessToken && refreshToken) {
+                console.log('Auth callback detected, processing tokens...');
+                // Don't clean URL yet - let Supabase process it first
+                // Supabase will handle the tokens when we call getSession()
             }
             
             // Initialize Supabase and check auth state immediately
@@ -102,9 +104,31 @@ document.addEventListener('alpine:init', () => {
             if (!supabase) {
                 console.log('Initializing Supabase client');
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                
+                // Listen for auth changes FIRST
+                supabase.auth.onAuthStateChange((event, session) => {
+                    console.log('Auth state change:', event, session);
+                    this.user = session?.user || null;
+                    this.showLoginModal = false;
+                    
+                    if (event === 'SIGNED_IN' && session) {
+                        console.log('User signed in:', session.user.email);
+                        // Clean up URL after successful auth
+                        if (window.location.hash.includes('access_token')) {
+                            window.history.replaceState({}, document.title, window.location.pathname);
+                        }
+                        // First sync after login - upload local data
+                        this.syncToSupabase().then(() => {
+                            this.syncFromSupabase();
+                        });
+                    } else if (event === 'SIGNED_OUT') {
+                        console.log('User signed out');
+                        this.syncStatus = 'idle';
+                    }
+                });
             }
             
-            // Check for existing session
+            // Now check for existing session (this will trigger the auth state change)
             const { data: { session }, error } = await supabase.auth.getSession();
             console.log('Session check:', session, error);
             
@@ -115,24 +139,6 @@ document.addEventListener('alpine:init', () => {
                 // Sync on login
                 this.syncFromSupabase();
             }
-            
-            // Listen for auth changes
-            supabase.auth.onAuthStateChange((event, session) => {
-                console.log('Auth state change:', event, session);
-                this.user = session?.user || null;
-                this.showLoginModal = false;
-                
-                if (event === 'SIGNED_IN' && session) {
-                    console.log('User signed in:', session.user.email);
-                    // First sync after login - upload local data
-                    this.syncToSupabase().then(() => {
-                        this.syncFromSupabase();
-                    });
-                } else if (event === 'SIGNED_OUT') {
-                    console.log('User signed out');
-                    this.syncStatus = 'idle';
-                }
-            });
         },
         
         // Sign in with OAuth provider
