@@ -1,6 +1,9 @@
 // Supabase Configuration
 const SUPABASE_URL = 'https://rgjndmuhnnpnhxfppmpd.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnam5kbXVobm5wbmh4ZnBwbXBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjQ2MTgzMzAsImV4cCI6MjA0MDE5NDMzMH0.y2MlHKG5vKbmRMcWo_g1pFZbMpAhUUGQ-rJjLz-nJtI';
+// You need to get the anon key from your Supabase dashboard:
+// Go to: https://supabase.com/dashboard/project/rgjndmuhnnpnhxfppmpd/settings/api
+// Copy the "anon public" key and replace below
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnam5kbXVobm5wbmh4ZnBwbXBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxNTYwMzMsImV4cCI6MjA3MTczMjAzM30.cZCuYG9kDLjvGKtZlCeuLeEpGolq1EeZChqtaItK4Ts'; // Get from Supabase dashboard > Settings > API
 
 let supabase = null;
 
@@ -19,14 +22,49 @@ document.addEventListener('alpine:init', () => {
         showLoginModal: false,
         syncStatus: 'idle', // idle, syncing, synced, error
         lastSyncTime: null,
+        emailForLogin: '',
         
         // Initialize
         init() {
             // Load from localStorage
             this.loadNuts();
             
-            // Initialize Supabase and check auth state
-            this.initSupabase();
+            // Check for auth errors in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const hashParams = new URLSearchParams(window.location.hash.slice(1));
+            const error = urlParams.get('error') || hashParams.get('error');
+            const errorDescription = urlParams.get('error_description') || hashParams.get('error_description');
+            
+            if (error) {
+                console.error('Auth error:', error, errorDescription);
+                // Clean up URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+                
+                // Only show OAuth errors, not email verification pending
+                if (errorDescription?.includes('Error getting user profile')) {
+                    // OAuth not configured - silently ignore since we're using email
+                    console.log('OAuth not configured, use email login instead');
+                }
+            }
+            
+            // Check if this is a successful email auth callback
+            const accessToken = hashParams.get('access_token');
+            if (accessToken) {
+                console.log('Email auth successful, token found');
+                // Clean up URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            
+            // Initialize Supabase and check auth state immediately
+            // This is important for OAuth redirects
+            if (typeof window.supabase !== 'undefined') {
+                this.initSupabase();
+            } else {
+                // Wait for Supabase to load then init
+                window.addEventListener('load', () => {
+                    this.initSupabase();
+                });
+            }
             
             // Set up online/offline detection
             window.addEventListener('online', () => {
@@ -56,25 +94,45 @@ document.addEventListener('alpine:init', () => {
         
         // Initialize Supabase (lazy - only when needed)
         async initSupabase() {
-            if (!supabase && typeof window.supabase !== 'undefined') {
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                
-                // Check for existing session
-                const { data: { session } } = await supabase.auth.getSession();
-                if (session) {
-                    this.user = session.user;
-                    // Sync on login
-                    this.syncFromSupabase();
-                }
-                
-                // Listen for auth changes
-                supabase.auth.onAuthStateChange((event, session) => {
-                    this.user = session?.user || null;
-                    if (event === 'SIGNED_IN') {
-                        this.syncFromSupabase();
-                    }
-                });
+            if (typeof window.supabase === 'undefined') {
+                console.log('Supabase not loaded yet');
+                return;
             }
+            
+            if (!supabase) {
+                console.log('Initializing Supabase client');
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+            
+            // Check for existing session
+            const { data: { session }, error } = await supabase.auth.getSession();
+            console.log('Session check:', session, error);
+            
+            if (session) {
+                console.log('User logged in:', session.user.email);
+                this.user = session.user;
+                this.showLoginModal = false;
+                // Sync on login
+                this.syncFromSupabase();
+            }
+            
+            // Listen for auth changes
+            supabase.auth.onAuthStateChange((event, session) => {
+                console.log('Auth state change:', event, session);
+                this.user = session?.user || null;
+                this.showLoginModal = false;
+                
+                if (event === 'SIGNED_IN' && session) {
+                    console.log('User signed in:', session.user.email);
+                    // First sync after login - upload local data
+                    this.syncToSupabase().then(() => {
+                        this.syncFromSupabase();
+                    });
+                } else if (event === 'SIGNED_OUT') {
+                    console.log('User signed out');
+                    this.syncStatus = 'idle';
+                }
+            });
         },
         
         // Sign in with OAuth provider
@@ -88,13 +146,38 @@ document.addEventListener('alpine:init', () => {
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: provider,
                 options: {
-                    redirectTo: window.location.origin + '/inventory'
+                    redirectTo: `${window.location.origin}/inventory`
                 }
             });
             
             if (error) {
                 console.error('Auth error:', error);
                 alert('Login failed: ' + error.message);
+            }
+        },
+        
+        // Sign in with email (magic link)
+        async signInWithEmail() {
+            await this.initSupabase();
+            if (!supabase || !this.emailForLogin) {
+                alert('Please enter your email address');
+                return;
+            }
+            
+            const { error } = await supabase.auth.signInWithOtp({
+                email: this.emailForLogin,
+                options: {
+                    emailRedirectTo: `${window.location.origin}/inventory`
+                }
+            });
+            
+            if (error) {
+                console.error('Email auth error:', error);
+                alert('Failed to send magic link: ' + error.message);
+            } else {
+                alert('Check your email for the magic link!');
+                this.showLoginModal = false;
+                this.emailForLogin = '';
             }
         },
         
