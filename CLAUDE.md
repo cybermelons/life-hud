@@ -120,3 +120,9 @@ Supabase credentials are hardcoded in `app.js` (public anon key is safe to expos
 ## Live URL
 
 https://life-hud.am0ottrv.workers.dev
+
+## Development Workflow
+
+- Always commit changes before deploying to production
+- Use descriptive commit messages
+- Test locally when possible before deploying
