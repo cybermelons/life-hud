@@ -117,9 +117,13 @@ document.addEventListener('alpine:init', () => {
                         if (window.location.hash.includes('access_token')) {
                             window.history.replaceState({}, document.title, window.location.pathname);
                         }
-                        // First sync after login - upload local data
+                        // First sync after login - upload local data FIRST, then download
+                        console.log('Performing initial sync after login...');
                         this.syncToSupabase().then(() => {
-                            this.syncFromSupabase();
+                            console.log('Local data uploaded, now fetching remote data...');
+                            return this.syncFromSupabase();
+                        }).then(() => {
+                            console.log('Initial sync complete');
                         });
                     } else if (event === 'SIGNED_OUT') {
                         console.log('User signed out');
@@ -136,8 +140,11 @@ document.addEventListener('alpine:init', () => {
                 console.log('User logged in:', session.user.email);
                 this.user = session.user;
                 this.showLoginModal = false;
-                // Sync on login
-                this.syncFromSupabase();
+                // Do a full sync - upload local first, then download
+                console.log('Session detected, performing sync...');
+                this.syncToSupabase().then(() => {
+                    return this.syncFromSupabase();
+                });
             }
         },
         
@@ -198,9 +205,14 @@ document.addEventListener('alpine:init', () => {
         
         // Sync from Supabase to local
         async syncFromSupabase() {
-            if (!supabase || !this.user) return;
+            if (!supabase || !this.user) {
+                console.log('Cannot sync from Supabase: no user or client');
+                return;
+            }
             
+            console.log('Fetching nuts from Supabase...');
             this.syncStatus = 'syncing';
+            
             try {
                 const { data, error } = await supabase
                     .from('nuts')
@@ -210,43 +222,70 @@ document.addEventListener('alpine:init', () => {
                 
                 if (error) throw error;
                 
+                console.log('Fetched from Supabase:', data?.length || 0, 'nuts');
+                
                 // Merge with local data (prefer newer)
                 const merged = this.mergeNuts(this.nuts, data || []);
                 this.nuts = merged;
                 this.saveNuts();
                 
+                console.log('After merge, total nuts:', this.nuts.length);
+                
                 this.syncStatus = 'synced';
                 this.lastSyncTime = new Date();
             } catch (error) {
-                console.error('Sync error:', error);
+                console.error('Sync from Supabase error:', error);
                 this.syncStatus = 'error';
+                alert('Failed to fetch from Supabase: ' + error.message);
             }
         },
         
         // Sync local changes to Supabase
         async syncToSupabase() {
-            if (!supabase || !this.user) return;
+            if (!supabase || !this.user) {
+                console.log('Cannot sync: no user or supabase client');
+                return;
+            }
             
+            console.log('Starting sync to Supabase, nuts to sync:', this.nuts.length);
             this.syncStatus = 'syncing';
+            
             try {
-                // Prepare nuts for Supabase (add user_id)
+                // Filter and prepare nuts for Supabase
                 const nutsToSync = this.nuts.map(nut => ({
-                    ...nut,
-                    user_id: this.user.id
+                    id: nut.id,
+                    user_id: this.user.id,
+                    content: nut.content || '',
+                    type: nut.type || 'note',
+                    timestamp: nut.timestamp || new Date().toISOString(),
+                    kingdom: nut.kingdom || null,
+                    zone: nut.zone || null
                 }));
                 
-                // Upsert all nuts
-                const { error } = await supabase
-                    .from('nuts')
-                    .upsert(nutsToSync, { onConflict: 'id' });
+                console.log('Syncing nuts:', nutsToSync);
                 
-                if (error) throw error;
+                // Upsert all nuts in batches to avoid size limits
+                const batchSize = 100;
+                for (let i = 0; i < nutsToSync.length; i += batchSize) {
+                    const batch = nutsToSync.slice(i, i + batchSize);
+                    const { data, error } = await supabase
+                        .from('nuts')
+                        .upsert(batch, { onConflict: 'id' });
+                    
+                    if (error) {
+                        console.error('Batch sync error:', error);
+                        throw error;
+                    }
+                    console.log(`Synced batch ${i/batchSize + 1}, items:`, batch.length);
+                }
                 
                 this.syncStatus = 'synced';
                 this.lastSyncTime = new Date();
+                console.log('Sync complete!');
             } catch (error) {
                 console.error('Sync error:', error);
                 this.syncStatus = 'error';
+                alert('Sync failed: ' + error.message);
             }
         },
         
@@ -273,10 +312,21 @@ document.addEventListener('alpine:init', () => {
         
         // Manual sync trigger
         async sync() {
-            if (this.user) {
-                await this.syncToSupabase();
-                await this.syncFromSupabase();
+            if (!this.user) {
+                console.log('Not logged in, cannot sync');
+                alert('Please login to sync');
+                return;
             }
+            
+            console.log('Manual sync triggered');
+            
+            // First upload local changes
+            await this.syncToSupabase();
+            
+            // Then fetch remote changes
+            await this.syncFromSupabase();
+            
+            console.log('Manual sync complete');
         },
         
         // Load NUTs from localStorage
