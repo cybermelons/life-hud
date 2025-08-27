@@ -1,3 +1,14 @@
+# next
+
+1. click nut to go to inspect nut page detail -> click action button -> go to next action
+2. next actions:
+  - no thread? -> create thread -> view thread
+  - no klesha? -> view thread
+  - no root cause? -> identify root desire
+  - no new chain
+  - no resolution task? -> view thread -> open nut input to task
+  - tht's it for now
+
 # Development Plan: Life HUD MVP - NUT Journaling Mind Palace
 
 ## Overview
