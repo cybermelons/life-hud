@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Threads - Life HUD</title>
+    
+    <!-- Core Styles -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- App Scripts -->
+    <script src="/app.js"></script>
+    <script src="/app-threads.js"></script>
+    
+    <!-- Custom styles -->
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .thread-arrow::after {
+            content: '↓';
+            display: block;
+            text-align: center;
+            opacity: 0.3;
+            margin: 0.5rem 0;
+        }
+        .klesha-taint {
+            background: linear-gradient(to bottom, rgba(239, 68, 68, 0.1), transparent);
+            border-color: rgb(239 68 68 / 0.3);
+        }
+        .samskara-glow {
+            background: linear-gradient(to bottom, rgba(168, 85, 247, 0.1), transparent);
+            border-color: rgb(168 85 247 / 0.3);
+        }
+        .lane-separator {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            height: 2px;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100" x-data>
+    <!-- Main Container -->
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-gray-800 border-b border-gray-700">
+            <div class="px-4 py-3 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <a href="/" class="text-gray-400 hover:text-white">←</a>
+                    <h1 class="text-xl font-semibold">Threads</h1>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button class="text-gray-400 hover:text-white p-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </button>
+                    <button class="text-gray-400 hover:text-white p-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Filter Tabs -->
+            <div class="px-4 pb-2 flex gap-2 overflow-x-auto">
+                <button @click="filter = 'all'" 
+                    :class="filter === 'all' ? 'bg-gray-700 text-white' : 'text-gray-400'"
+                    class="px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap">
+                    All
+                </button>
+                <button @click="filter = 'unthreaded'"
+                    :class="filter === 'unthreaded' ? 'bg-gray-700 text-white' : 'text-gray-400'"
+                    class="px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap">
+                    Unthreaded
+                </button>
+                <button @click="filter = 'kleshas'"
+                    :class="filter === 'kleshas' ? 'bg-gray-700 text-white' : 'text-gray-400'"
+                    class="px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap">
+                    ⚠️ Kleshas
+                </button>
+                <button @click="filter = 'library'"
+                    :class="filter === 'library' ? 'bg-gray-700 text-white' : 'text-gray-400'"
+                    class="px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap">
+                    📚 Library
+                </button>
+            </div>
+        </header>
+
+        <!-- Timeline View (default) -->
+        <main class="flex-1 overflow-y-auto" x-show="!selectedThread">
+            <div class="p-4 space-y-3">
+                <!-- Thread Cards -->
+                <template x-for="thread in filteredThreads" :key="thread.id">
+                    <div @click="openThread(thread)" 
+                        class="bg-gray-800 rounded-lg p-4 cursor-pointer hover:bg-gray-750 transition-colors">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span x-text="thread.klesha ? '⚠️ KLESHA' : 'Thread #' + thread.id"
+                                        :class="thread.klesha ? 'text-red-400 font-semibold' : 'text-gray-400'"
+                                        class="text-sm"></span>
+                                    <span x-show="thread.nuts.length > 1" 
+                                        class="text-xs text-gray-500"
+                                        x-text="`(${thread.nuts.length} NUTs)`"></span>
+                                    <span x-show="thread.hasBonus" class="text-xs">🎁</span>
+                                </div>
+                                <p class="text-gray-200" x-text="thread.preview"></p>
+                            </div>
+                            <span class="text-xs text-gray-500" x-text="thread.timestamp"></span>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Solo NUTs -->
+                <template x-for="nut in soloNuts" :key="nut.id">
+                    <div @click="selectNut(nut)"
+                        class="bg-gray-800 rounded-lg p-4 cursor-pointer hover:bg-gray-750 transition-colors">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-xs text-gray-500">NUT #<span x-text="nut.id"></span> (solo)</span>
+                                </div>
+                                <p class="text-gray-200" x-text="nut.content"></p>
+                            </div>
+                            <span class="text-xs text-gray-500" x-text="nut.timestamp"></span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </main>
+
+        <!-- Thread View (when selected) -->
+        <main class="flex-1 overflow-y-auto" x-show="selectedThread" style="display: none;">
+            <div class="p-4">
+                <!-- Thread Header -->
+                <div class="mb-4 bg-gray-800 rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h2 class="text-lg font-semibold flex items-center gap-2">
+                            <span x-text="selectedThread?.klesha ? '⚠️ KLESHA Thread' : 'Thread'"></span>
+                            <span x-show="selectedThread?.rootDesire" 
+                                class="text-sm text-purple-400"
+                                x-text="selectedThread?.rootDesire"></span>
+                        </h2>
+                        <button @click="closeThread" class="text-gray-400 hover:text-white">✕</button>
+                    </div>
+                    
+                    <!-- State Indicator -->
+                    <div x-show="selectedThread?.klesha && !selectedThread?.rootDesire"
+                        class="bg-yellow-900/30 text-yellow-400 rounded p-2 text-sm">
+                        Identify root desire to unlock samskara practice
+                    </div>
+                    
+                    <div x-show="selectedThread?.rootDesire && !hasCompleteSamskara"
+                        class="bg-purple-900/30 text-purple-400 rounded p-2 text-sm">
+                        Add Note + Urge + Task to complete samskara chain
+                    </div>
+                </div>
+
+                <!-- Two Lane Interface (only when root desire identified) -->
+                <div x-show="selectedThread?.rootDesire" class="space-y-4">
+                    <!-- Klesha Lane (Top) -->
+                    <div class="bg-gray-800 rounded-lg p-4">
+                        <h3 class="text-sm font-semibold text-red-400 mb-3">⚠️ KLESHA (Problem)</h3>
+                        <div class="space-y-2">
+                            <template x-for="nut in kleshaLane" :key="nut.id">
+                                <div class="bg-gray-750 rounded p-3 klesha-taint cursor-move"
+                                    @dragstart="dragStart($event, nut)"
+                                    @dragend="dragEnd"
+                                    draggable="true">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <span class="text-xs text-gray-500 uppercase" x-text="nut.type"></span>
+                                            <p class="text-gray-200" x-text="nut.content"></p>
+                                        </div>
+                                        <span class="text-xs text-gray-500" x-text="nut.timestamp"></span>
+                                    </div>
+                                    <div class="thread-arrow"></div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Lane Separator -->
+                    <div class="lane-separator"></div>
+
+                    <!-- Samskara Lane (Bottom) -->
+                    <div class="bg-gray-800 rounded-lg p-4"
+                        @dragover.prevent
+                        @drop="dropInSamskara($event)">
+                        <h3 class="text-sm font-semibold text-purple-400 mb-3 flex items-center justify-between">
+                            <span>✨ SAMSKARA (Solution)</span>
+                            <div class="flex gap-2 text-xs">
+                                <span :class="hasSamskaraType('note') ? 'text-green-400' : 'text-gray-500'">
+                                    [<span x-text="hasSamskaraType('note') ? '✓' : '✗'"></span> Note]
+                                </span>
+                                <span :class="hasSamskaraType('urge') ? 'text-green-400' : 'text-gray-500'">
+                                    [<span x-text="hasSamskaraType('urge') ? '✓' : '✗'"></span> Urge]
+                                </span>
+                                <span :class="hasSamskaraType('task') ? 'text-green-400' : 'text-gray-500'">
+                                    [<span x-text="hasSamskaraType('task') ? '✓' : '✗'"></span> Task]
+                                </span>
+                            </div>
+                        </h3>
+                        
+                        <div class="space-y-2 min-h-[100px]">
+                            <template x-for="nut in samskaraLane" :key="nut.id">
+                                <div class="bg-gray-750 rounded p-3 samskara-glow">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <span class="text-xs text-gray-500 uppercase" x-text="nut.type"></span>
+                                            <p class="text-gray-200" x-text="nut.content"></p>
+                                        </div>
+                                        <span class="text-xs text-gray-500" x-text="nut.timestamp"></span>
+                                    </div>
+                                    <div class="thread-arrow"></div>
+                                </div>
+                            </template>
+                            
+                            <div x-show="samskaraLane.length === 0" 
+                                class="text-center py-8 text-gray-500 text-sm">
+                                Drag NUTs here to build your practice
+                            </div>
+                            
+                            <button x-show="!hasCompleteSamskara && samskaraLane.length > 0"
+                                class="w-full py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm">
+                                + Add <span x-text="nextSamskaraType()"></span> to complete
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Create Seal Button -->
+                    <button x-show="hasCompleteSamskara"
+                        @click="createSeal"
+                        class="w-full py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold">
+                        ✨ Create Seal
+                    </button>
+                </div>
+
+                <!-- Regular Thread View (no klesha/samskara separation) -->
+                <div x-show="!selectedThread?.rootDesire" class="space-y-2">
+                    <template x-for="(nut, index) in selectedThread?.nuts || []" :key="nut.id">
+                        <div>
+                            <div class="bg-gray-800 rounded-lg p-4"
+                                :class="nut.klesha ? 'klesha-taint' : ''">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="text-xs text-gray-500 uppercase" x-text="nut.type"></span>
+                                            <span x-show="nut.klesha" class="text-xs text-red-400">⚠️ Klesha</span>
+                                        </div>
+                                        <p class="text-gray-200" x-text="nut.content"></p>
+                                    </div>
+                                    <span class="text-xs text-gray-500" x-text="nut.timestamp"></span>
+                                </div>
+                            </div>
+                            <div x-show="index < selectedThread.nuts.length - 1" class="thread-arrow"></div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Thread Actions -->
+                <div class="mt-6 flex gap-2">
+                    <button x-show="!selectedThread?.klesha"
+                        @click="markKlesha"
+                        class="flex-1 py-2 bg-red-600 hover:bg-red-700 rounded text-sm">
+                        ⚠️ Mark Klesha
+                    </button>
+                    <button x-show="selectedThread?.klesha && !selectedThread?.rootDesire && selectedThread?.nuts?.length >= 3"
+                        @click="showIdentifyModal = true"
+                        class="flex-1 py-2 bg-purple-600 hover:bg-purple-700 rounded text-sm">
+                        🔮 Identify Root Desire
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Actions -->
+        <div class="bg-gray-800 border-t border-gray-700 p-4">
+            <div class="flex gap-2">
+                <input type="text" 
+                    x-model="newNutContent"
+                    @keydown.enter="addNut"
+                    placeholder="What's happening?"
+                    class="flex-1 bg-gray-700 rounded-lg px-4 py-2 text-gray-100 placeholder-gray-400">
+                <div class="flex gap-1">
+                    <button @click="nutType = 'note'; addNut()" 
+                        class="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm">N</button>
+                    <button @click="nutType = 'urge'; addNut()"
+                        class="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm">U</button>
+                    <button @click="nutType = 'task'; addNut()"
+                        class="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm">T</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Identify Root Desire Modal -->
+    <div x-show="showIdentifyModal" 
+        @click.away="showIdentifyModal = false"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center p-4"
+        style="display: none;">
+        <div class="bg-gray-800 rounded-lg p-6 max-w-md w-full">
+            <h3 class="text-lg font-semibold mb-4">Identify Root Desire</h3>
+            <p class="text-gray-400 text-sm mb-4">What's driving this pattern?</p>
+            
+            <div class="space-y-2 mb-6">
+                <template x-for="desire in rootDesires" :key="desire.id">
+                    <label class="flex items-start gap-3 p-3 bg-gray-700 rounded cursor-pointer hover:bg-gray-600">
+                        <input type="radio" name="desire" :value="desire.id" 
+                            x-model="selectedDesire" class="mt-1">
+                        <div>
+                            <div class="font-medium" x-text="desire.name"></div>
+                            <div class="text-sm text-gray-400" x-text="desire.description"></div>
+                        </div>
+                    </label>
+                </template>
+            </div>
+            
+            <div class="flex gap-2">
+                <button @click="showIdentifyModal = false" 
+                    class="flex-1 py-2 bg-gray-700 hover:bg-gray-600 rounded">Cancel</button>
+                <button @click="identifyRootDesire" 
+                    class="flex-1 py-2 bg-purple-600 hover:bg-purple-700 rounded font-semibold">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thread App Logic -->
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('threadApp', () => ({
+                filter: 'all',
+                threads: [],
+                nuts: [],
+                selectedThread: null,
+                selectedNut: null,
+                newNutContent: '',
+                nutType: 'note',
+                showIdentifyModal: false,
+                selectedDesire: '',
+                draggedNut: null,
+                
+                rootDesires: [
+                    { id: 'vishaya', name: 'Vishaya', description: 'Sensory pleasure - "I just want stimulation"' },
+                    { id: 'kirti', name: 'Kirti', description: 'Recognition/validation - "I need to feel seen and valued"' },
+                    { id: 'bhoga', name: 'Bhoga', description: 'Comfort/avoidance - "I\'m avoiding something painful"' },
+                    { id: 'aishvarya', name: 'Aishvarya', description: 'Power/control - "I need to feel in control"' },
+                    { id: 'iccha', name: 'Iccha', description: 'Endless craving - "Nothing is ever enough"' }
+                ],
+
+                init() {
+                    // Load sample data
+                    this.loadSampleData();
+                },
+
+                loadSampleData() {
+                    // Sample NUTs
+                    this.nuts = [
+                        { id: 1, content: 'Instagram scrolling made me feel inadequate', type: 'note', timestamp: '7:09pm', threadId: null, klesha: false },
+                        { id: 2, content: 'I want to feel connected', type: 'urge', timestamp: '7:15pm', threadId: null, klesha: false },
+                        { id: 3, content: 'Spent 3 hours doom scrolling', type: 'urge', timestamp: '7:20pm', threadId: 1, klesha: true },
+                        { id: 4, content: 'I notice I\'m comparing myself', type: 'note', timestamp: '7:25pm', threadId: 1, klesha: true },
+                        { id: 5, content: 'I want real connection', type: 'urge', timestamp: '7:30pm', threadId: 1, klesha: true },
+                        { id: 6, content: 'Text Sarah about coffee', type: 'task', timestamp: '7:35pm', threadId: 1, klesha: true }
+                    ];
+
+                    // Sample threads
+                    this.threads = [
+                        { 
+                            id: 1, 
+                            nuts: [3, 4, 5, 6], 
+                            klesha: true, 
+                            rootDesire: null,
+                            preview: 'Spent 3 hours doom scrolling...',
+                            timestamp: '7:20pm',
+                            hasBonus: true
+                        }
+                    ];
+                },
+
+                get filteredThreads() {
+                    if (this.filter === 'all') return this.threads;
+                    if (this.filter === 'kleshas') return this.threads.filter(t => t.klesha);
+                    return this.threads;
+                },
+
+                get soloNuts() {
+                    return this.nuts.filter(n => !n.threadId);
+                },
+
+                get kleshaLane() {
+                    if (!this.selectedThread?.rootDesire) return [];
+                    return this.nuts.filter(n => n.threadId === this.selectedThread.id && n.klesha);
+                },
+
+                get samskaraLane() {
+                    if (!this.selectedThread?.rootDesire) return [];
+                    return this.nuts.filter(n => n.threadId === this.selectedThread.id && n.samskara);
+                },
+
+                get hasCompleteSamskara() {
+                    const samskara = this.samskaraLane;
+                    const types = samskara.map(n => n.type);
+                    return types.includes('note') && types.includes('urge') && types.includes('task');
+                },
+
+                hasSamskaraType(type) {
+                    return this.samskaraLane.some(n => n.type === type);
+                },
+
+                nextSamskaraType() {
+                    const samskara = this.samskaraLane;
+                    const types = samskara.map(n => n.type);
+                    if (!types.includes('note')) return 'Note';
+                    if (!types.includes('urge')) return 'Urge';
+                    if (!types.includes('task')) return 'Task';
+                    return '';
+                },
+
+                openThread(thread) {
+                    this.selectedThread = thread;
+                    this.selectedThread.nuts = this.nuts.filter(n => n.threadId === thread.id);
+                },
+
+                closeThread() {
+                    this.selectedThread = null;
+                },
+
+                selectNut(nut) {
+                    this.selectedNut = nut;
+                },
+
+                markKlesha() {
+                    if (!this.selectedThread) return;
+                    this.selectedThread.klesha = true;
+                    this.nuts.forEach(n => {
+                        if (n.threadId === this.selectedThread.id) {
+                            n.klesha = true;
+                        }
+                    });
+                },
+
+                identifyRootDesire() {
+                    if (!this.selectedDesire || !this.selectedThread) return;
+                    const desire = this.rootDesires.find(d => d.id === this.selectedDesire);
+                    this.selectedThread.rootDesire = desire.name;
+                    this.showIdentifyModal = false;
+                },
+
+                dragStart(event, nut) {
+                    this.draggedNut = nut;
+                    event.dataTransfer.effectAllowed = 'move';
+                },
+
+                dragEnd() {
+                    this.draggedNut = null;
+                },
+
+                dropInSamskara(event) {
+                    event.preventDefault();
+                    if (!this.draggedNut) return;
+                    
+                    // Move NUT from klesha to samskara
+                    this.draggedNut.klesha = false;
+                    this.draggedNut.samskara = true;
+                    this.draggedNut = null;
+                },
+
+                addNut() {
+                    if (!this.newNutContent.trim()) return;
+                    
+                    const newNut = {
+                        id: Math.max(...this.nuts.map(n => n.id)) + 1,
+                        content: this.newNutContent,
+                        type: this.nutType,
+                        timestamp: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
+                        threadId: this.selectedThread?.id || null,
+                        klesha: false,
+                        samskara: false
+                    };
+                    
+                    this.nuts.push(newNut);
+                    
+                    if (this.selectedThread) {
+                        this.selectedThread.nuts.push(newNut);
+                    }
+                    
+                    this.newNutContent = '';
+                },
+
+                createSeal() {
+                    // TODO: Implement seal creation
+                    alert('Seal created! Task completion ritual begins...');
+                }
+            }));
+        });
+    </script>
+</body>
+</html>

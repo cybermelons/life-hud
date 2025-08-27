@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Threads - Life HUD</title>
+    
+    <!-- Core Styles -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- App Scripts - Order matters! -->
+    <script src="/app.js"></script>
+    <script src="/stores/thread-store.js"></script>
+    <script src="/stores/kama-store.js"></script>
+    <script src="/stores/thread-ui-store.js"></script>
+    <script src="/components/thread-list.js"></script>
+    <script src="/components/kama-battle.js"></script>
+    
+    <!-- Custom styles -->
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .klesha-taint {
+            background: linear-gradient(to bottom, rgba(239, 68, 68, 0.1), transparent);
+            border-color: rgb(239 68 68 / 0.3);
+        }
+        .samskara-glow {
+            background: linear-gradient(to bottom, rgba(168, 85, 247, 0.1), transparent);
+            border-color: rgb(168 85 247 / 0.3);
+        }
+        .drag-over {
+            background-color: rgba(168, 85, 247, 0.2);
+            border: 2px dashed rgb(168 85 247);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100">
+    <!-- Main Container -->
+    <div class="min-h-screen flex flex-col">
+        
+        <!-- Header -->
+        <header class="bg-gray-800 border-b border-gray-700">
+            <div class="px-4 py-3 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <a href="/" class="text-gray-400 hover:text-white">←</a>
+                    <h1 class="text-xl font-semibold">Threads</h1>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span x-show="$store.threadUI.syncInProgress" class="text-xs text-blue-400">
+                        Syncing...
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Filter Tabs -->
+            <div class="px-4 pb-2 flex gap-2 overflow-x-auto">
+                <button @click="$store.threadUI.setFilter('all')" 
+                    :class="$store.threadUI.filter === 'all' ? 'bg-gray-700 text-white' : 'text-gray-400'"
+                    class="px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap">
+                    All
+                </button>
+                <button @click="$store.threadUI.setFilter('unthreaded')"
+                    :class="$store.threadUI.filter === 'unthreaded' ? 'bg-gray-700 text-white' : 'text-gray-400'"
+                    class="px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap">
+                    Solo NUTs
+                </button>
+                <button @click="$store.threadUI.setFilter('kleshas')"
+                    :class="$store.threadUI.filter === 'kleshas' ? 'bg-gray-700 text-white' : 'text-gray-400'"
+                    class="px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap">
+                    ⚠️ Kleshas
+                </button>
+                <button @click="$store.threadUI.setFilter('completed')"
+                    :class="$store.threadUI.filter === 'completed' ? 'bg-gray-700 text-white' : 'text-gray-400'"
+                    class="px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap">
+                    ✅ Completed
+                </button>
+            </div>
+        </header>
+
+        <!-- Timeline View -->
+        <main class="flex-1 overflow-y-auto" 
+              x-show="$store.threadUI.isTimelineView"
+              x-data="threadList">
+            <div class="p-4 space-y-3">
+                <!-- Loading State -->
+                <div x-show="$store.threadUI.threadsLoading" class="text-center py-8 text-gray-500">
+                    Loading threads...
+                </div>
+                
+                <!-- Thread Cards -->
+                <template x-for="thread in threads" :key="thread.id">
+                    <div @click="openThread(thread)" 
+                        class="bg-gray-800 rounded-lg p-4 cursor-pointer hover:bg-gray-750 transition-colors">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span x-text="thread.klesha ? '⚠️ KLESHA' : 'Thread'"
+                                        :class="thread.klesha ? 'text-red-400 font-semibold' : 'text-gray-400'"
+                                        class="text-sm"></span>
+                                    <span x-show="thread.nutCount > 1" 
+                                        class="text-xs text-gray-500"
+                                        x-text="`(${thread.nutCount} NUTs)`"></span>
+                                    <span x-show="thread.completed" class="text-xs">✅</span>
+                                    <span x-show="hasBonus(thread)" class="text-xs">🎁</span>
+                                </div>
+                                <p class="text-gray-200" x-text="thread.preview"></p>
+                            </div>
+                            <span class="text-xs text-gray-500" x-text="thread.timestamp"></span>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Solo NUTs -->
+                <template x-for="nut in soloNuts" :key="nut.id">
+                    <div @click="selectNut(nut)"
+                        class="bg-gray-800 rounded-lg p-4 cursor-pointer hover:bg-gray-750 transition-colors">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-xs text-gray-500 uppercase" x-text="nut.type"></span>
+                                    <span class="text-xs text-gray-500">(solo)</span>
+                                </div>
+                                <p class="text-gray-200" x-text="nut.content"></p>
+                            </div>
+                            <span class="text-xs text-gray-500" x-text="formatTimestamp(nut.timestamp)"></span>
+                        </div>
+                    </div>
+                </template>
+                
+                <!-- Empty State -->
+                <div x-show="threads.length === 0 && soloNuts.length === 0 && !$store.threadUI.threadsLoading"
+                     class="text-center py-12 text-gray-500">
+                    <p class="mb-4">No threads yet</p>
+                    <button @click="startNewThread()" 
+                            class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg">
+                        Create First Thread
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Thread View (Battle Mode) -->
+        <main class="flex-1 overflow-y-auto" 
+              x-show="$store.threadUI.isThreadView"
+              x-data="kamaBattle">
+            <div class="p-4">
+                <!-- Thread Header -->
+                <div class="mb-4 bg-gray-800 rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h2 class="text-lg font-semibold flex items-center gap-2">
+                            <span x-text="currentThread?.klesha ? '⚠️ KLESHA Thread' : 'Thread'"></span>
+                            <span x-show="currentThread?.rootDesire" 
+                                class="text-sm text-purple-400"
+                                x-text="currentThread?.rootDesire?.name"></span>
+                        </h2>
+                        <button @click="$store.threadUI.closeThread()" 
+                                class="text-gray-400 hover:text-white">✕</button>
+                    </div>
+                    
+                    <!-- Progress Indicators -->
+                    <div x-show="currentThread?.klesha && !currentThread?.rootDesire"
+                        class="bg-yellow-900/30 text-yellow-400 rounded p-2 text-sm">
+                        <span x-show="canIdentifyDesire">Ready to identify root desire</span>
+                        <span x-show="!canIdentifyDesire">Add more NUTs to identify pattern (need 3+)</span>
+                    </div>
+                    
+                    <div x-show="currentThread?.rootDesire && !hasCompleteSamskara"
+                        class="bg-purple-900/30 text-purple-400 rounded p-2 text-sm">
+                        Build samskara chain: Add Note + Urge + Task
+                    </div>
+                    
+                    <div x-show="hasCompleteSamskara"
+                        class="bg-green-900/30 text-green-400 rounded p-2 text-sm">
+                        Samskara complete! Ready to create seal
+                    </div>
+                </div>
+
+                <!-- Two Lane Interface (only when root desire identified) -->
+                <div x-show="currentThread?.rootDesire" class="space-y-4">
+                    
+                    <!-- Klesha Lane (Top) -->
+                    <div class="bg-gray-800 rounded-lg p-4">
+                        <h3 class="text-sm font-semibold text-red-400 mb-3">⚠️ KLESHA (Problem)</h3>
+                        <div class="space-y-2 min-h-[100px]"
+                             @dragover.prevent="dragOver($event, 'klesha')"
+                             @dragleave="dragLeave"
+                             @drop="dropInKlesha($event)"
+                             :class="$store.threadUI.dragOverZone === 'klesha' ? 'drag-over' : ''">
+                            <template x-for="nut in kleshaLane" :key="nut.id">
+                                <div class="bg-gray-750 rounded p-3 klesha-taint cursor-move"
+                                    @dragstart="dragStart($event, nut)"
+                                    @dragend="dragEnd"
+                                    draggable="true">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <span class="text-xs text-gray-500 uppercase" x-text="nut.type"></span>
+                                            <p class="text-gray-200" x-text="nut.content"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            
+                            <div x-show="kleshaLane.length === 0" 
+                                class="text-center py-8 text-gray-500 text-sm">
+                                Klesha NUTs appear here
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Separator -->
+                    <div class="h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent"></div>
+
+                    <!-- Samskara Lane (Bottom) -->
+                    <div class="bg-gray-800 rounded-lg p-4">
+                        <h3 class="text-sm font-semibold text-purple-400 mb-3 flex items-center justify-between">
+                            <span>✨ SAMSKARA (Solution)</span>
+                            <div class="flex gap-2 text-xs">
+                                <span :class="hasSamskaraType('note') ? 'text-green-400' : 'text-gray-500'">
+                                    [<span x-text="hasSamskaraType('note') ? '✓' : '✗'"></span> Note]
+                                </span>
+                                <span :class="hasSamskaraType('urge') ? 'text-green-400' : 'text-gray-500'">
+                                    [<span x-text="hasSamskaraType('urge') ? '✓' : '✗'"></span> Urge]
+                                </span>
+                                <span :class="hasSamskaraType('task') ? 'text-green-400' : 'text-gray-500'">
+                                    [<span x-text="hasSamskaraType('task') ? '✓' : '✗'"></span> Task]
+                                </span>
+                            </div>
+                        </h3>
+                        
+                        <div class="space-y-2 min-h-[100px]"
+                             @dragover.prevent="dragOver($event, 'samskara')"
+                             @dragleave="dragLeave"
+                             @drop="dropInSamskara($event)"
+                             :class="$store.threadUI.dragOverZone === 'samskara' ? 'drag-over' : ''">
+                            <template x-for="nut in samskaraLane" :key="nut.id">
+                                <div class="bg-gray-750 rounded p-3 samskara-glow cursor-move"
+                                    @dragstart="dragStart($event, nut)"
+                                    @dragend="dragEnd"
+                                    draggable="true">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <span class="text-xs text-gray-500 uppercase" x-text="nut.type"></span>
+                                            <p class="text-gray-200" x-text="nut.content"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            
+                            <div x-show="samskaraLane.length === 0" 
+                                class="text-center py-8 text-gray-500 text-sm">
+                                Drag NUTs here to build your practice
+                            </div>
+                            
+                            <button x-show="!hasCompleteSamskara && samskaraLane.length > 0"
+                                @click="addSamskaraNut(nextSamskaraType().toLowerCase())"
+                                class="w-full py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm">
+                                + Add <span x-text="nextSamskaraType()"></span> to complete chain
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Create Seal Button -->
+                    <button x-show="hasCompleteSamskara && !currentThread?.sealCreated"
+                        @click="createSeal"
+                        class="w-full py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold">
+                        ✨ Create Seal
+                    </button>
+                    
+                    <!-- Complete Task Button (after seal) -->
+                    <button x-show="currentThread?.sealCreated && !currentThread?.completed"
+                        @click="completeTask(currentThread.sealTask)"
+                        class="w-full py-3 bg-green-600 hover:bg-green-700 rounded-lg font-semibold">
+                        ⚡ Complete Extraction
+                    </button>
+                </div>
+
+                <!-- Regular Thread View (no klesha/samskara separation) -->
+                <div x-show="!currentThread?.rootDesire" class="space-y-2">
+                    <template x-for="nut in $store.threads.getThreadNuts($store.threadUI.selectedThreadId)" :key="nut.id">
+                        <div class="bg-gray-800 rounded-lg p-4"
+                            :class="nut.klesha ? 'klesha-taint' : ''">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="text-xs text-gray-500 uppercase" x-text="nut.type"></span>
+                                        <span x-show="nut.klesha" class="text-xs text-red-400">⚠️ Klesha</span>
+                                    </div>
+                                    <p class="text-gray-200" x-text="nut.content"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Thread Actions -->
+                <div class="mt-6 flex gap-2">
+                    <button x-show="!currentThread?.klesha"
+                        @click="markKlesha"
+                        class="flex-1 py-2 bg-red-600 hover:bg-red-700 rounded text-sm">
+                        ⚠️ Mark as Klesha
+                    </button>
+                    <button x-show="canIdentifyDesire"
+                        @click="openIdentifyModal"
+                        class="flex-1 py-2 bg-purple-600 hover:bg-purple-700 rounded text-sm">
+                        🔮 Identify Root Desire
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Input -->
+        <div class="bg-gray-800 border-t border-gray-700 p-4">
+            <div class="flex gap-2">
+                <input type="text" 
+                    x-model="$store.threadUI.newNutContent"
+                    @keydown.enter="$store.app.nutContent = $store.threadUI.newNutContent; $store.app.addNut(); $store.threadUI.newNutContent = ''"
+                    placeholder="What's happening?"
+                    data-nut-input
+                    class="flex-1 bg-gray-700 rounded-lg px-4 py-2 text-gray-100 placeholder-gray-400">
+                <div class="flex gap-1">
+                    <button @click="$store.app.nutType = 'note'; $store.app.nutContent = $store.threadUI.newNutContent; $store.app.addNut(); $store.threadUI.newNutContent = ''" 
+                        class="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm">N</button>
+                    <button @click="$store.app.nutType = 'urge'; $store.app.nutContent = $store.threadUI.newNutContent; $store.app.addNut(); $store.threadUI.newNutContent = ''"
+                        class="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm">U</button>
+                    <button @click="$store.app.nutType = 'task'; $store.app.nutContent = $store.threadUI.newNutContent; $store.app.addNut(); $store.threadUI.newNutContent = ''"
+                        class="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm">T</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Identify Root Desire Modal -->
+    <div x-show="$store.threadUI.showIdentifyModal" 
+        @click.away="$store.threadUI.closeIdentifyModal()"
+        x-data="kamaBattle"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+        style="display: none;">
+        <div class="bg-gray-800 rounded-lg p-6 max-w-md w-full">
+            <h3 class="text-lg font-semibold mb-4">Identify Root Desire</h3>
+            <p class="text-gray-400 text-sm mb-4">What's driving this pattern?</p>
+            
+            <div class="space-y-2 mb-6">
+                <template x-for="desire in rootDesires" :key="desire.id">
+                    <label class="flex items-start gap-3 p-3 bg-gray-700 rounded cursor-pointer hover:bg-gray-600">
+                        <input type="radio" name="desire" :value="desire.id" 
+                            x-model="selectedDesire" class="mt-1">
+                        <div>
+                            <div class="font-medium" x-text="desire.name"></div>
+                            <div class="text-sm text-gray-400" x-text="desire.description"></div>
+                        </div>
+                    </label>
+                </template>
+            </div>
+            
+            <div class="flex gap-2">
+                <button @click="$store.threadUI.closeIdentifyModal()" 
+                    class="flex-1 py-2 bg-gray-700 hover:bg-gray-600 rounded">Cancel</button>
+                <button @click="identifyRootDesire()" 
+                    class="flex-1 py-2 bg-purple-600 hover:bg-purple-700 rounded font-semibold">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Toast -->
+    <div x-show="$store.threadUI.showError"
+         x-transition
+         class="fixed bottom-20 left-4 right-4 bg-red-600 text-white p-3 rounded-lg z-50">
+        <p x-text="$store.threadUI.lastError"></p>
+    </div>
+
+    <!-- Initialize stores on load -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize stores after Alpine is ready
+            setTimeout(() => {
+                Alpine.store('threads')?.init();
+                Alpine.store('kama')?.init();
+            }, 100);
+        });
+    </script>
+</body>
+</html>
