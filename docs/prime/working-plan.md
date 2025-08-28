@@ -25,13 +25,13 @@
 - [x] Implement Thread-Kama 1:1 mapping
 - [x] Add invariant checking (queues = thread NUTs)
 
-#### Phase 2: Core Mechanics (6 hours)
-- [ ] NUT klesha marking (explicit)
-- [ ] Thread taint computation (derived)
-- [ ] View switching based on taint
-- [ ] Kama auto-creation for tainted threads
-- [ ] Queue management (klesha ↔ samskara)
-- [ ] Root desire identification on Kama
+#### Phase 2: Core Mechanics (6 hours) ✅
+- [x] NUT klesha marking (explicit)
+- [x] Thread taint computation (derived)
+- [x] View switching based on taint
+- [x] Kama auto-creation for tainted threads
+- [x] Queue management (klesha ↔ samskara)
+- [x] Root desire identification on Kama
 
 #### Phase 3: Battle Flow (6 hours)
 - [ ] Samskara chain validation (N→U→T)

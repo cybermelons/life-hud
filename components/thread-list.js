@@ -3,6 +3,9 @@
 
 document.addEventListener('alpine:init', () => {
     Alpine.data('threadList', () => ({
+        // Long press detection
+        longPressTimer: null,
+        
         // Component initialization
         init() {
             // Component is purely presentational, stores handle data
@@ -99,6 +102,75 @@ document.addEventListener('alpine:init', () => {
         hasBonus(thread) {
             const kamaStore = Alpine.store('kama');
             return thread.klesha && kamaStore.hasCompleteSamskara(thread.id);
+        },
+        
+        // Long press handling for NUT klesha marking
+        handleNutMouseDown(nutId, event) {
+            // Clear any existing timer
+            if (this.longPressTimer) clearTimeout(this.longPressTimer);
+            
+            // Start long press detection (800ms)
+            this.longPressTimer = setTimeout(() => {
+                this.markNutAsKlesha(nutId);
+                // Haptic feedback if available
+                if (navigator.vibrate) navigator.vibrate(50);
+            }, 800);
+            
+            // Prevent context menu on mobile
+            event.preventDefault();
+        },
+        
+        handleNutMouseUp() {
+            // Clear timer if mouse/touch released
+            if (this.longPressTimer) {
+                clearTimeout(this.longPressTimer);
+                this.longPressTimer = null;
+            }
+        },
+        
+        handleNutMouseLeave() {
+            // Clear timer if mouse leaves element
+            if (this.longPressTimer) {
+                clearTimeout(this.longPressTimer);
+                this.longPressTimer = null;
+            }
+        },
+        
+        // Mark NUT as klesha with confirmation
+        markNutAsKlesha(nutId) {
+            const appStore = Alpine.store('app');
+            const threadStore = Alpine.store('threads');
+            const uiStore = Alpine.store('threadUI');
+            
+            // Show confirmation modal
+            const nut = appStore.nuts.find(n => n.id === nutId);
+            if (!nut) return;
+            
+            // Mark as klesha
+            appStore.markNutKlesha(nutId);
+            
+            // Find the thread containing this NUT
+            const thread = threadStore.threads.find(t => t.nutIds && t.nutIds.includes(nutId));
+            if (thread) {
+                // If thread is now tainted, it might switch to battle view
+                if (threadStore.isThreadTainted(thread.id)) {
+                    // Show klesha marking animation
+                    uiStore.showKleshaAnimation = true;
+                    setTimeout(() => {
+                        uiStore.showKleshaAnimation = false;
+                    }, 1500);
+                }
+            }
+        },
+        
+        // Check if NUT is klesha
+        isNutKlesha(nutId) {
+            return Alpine.store('app').isNutKlesha(nutId);
+        },
+        
+        // Check if thread is tainted
+        isThreadTainted(threadId) {
+            return Alpine.store('threads').isThreadTainted(threadId);
         }
     }));
 });

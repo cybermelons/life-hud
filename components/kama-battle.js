@@ -13,25 +13,49 @@ document.addEventListener('alpine:init', () => {
             return threadStore.getThread(uiStore.selectedThreadId);
         },
         
+        // Get current Kama (if thread is tainted)
+        get currentKama() {
+            if (!this.currentThread) return null;
+            
+            const threadStore = Alpine.store('threads');
+            const kamaStore = Alpine.store('kama');
+            
+            // Only get/create Kama if thread is tainted
+            if (threadStore.isThreadTainted(this.currentThread.id)) {
+                return kamaStore.ensureKamaForThread(this.currentThread.id);
+            }
+            return null;
+        },
+        
+        // Check if should show battle view
+        get showBattleView() {
+            return this.currentKama !== null;
+        },
+        
+        // Check if should show samskara zone (root desire identified)
+        get showSamskaraZone() {
+            return this.currentKama && this.currentKama.rootDesire;
+        },
+        
         // Get klesha lane nuts
         get kleshaLane() {
+            if (!this.currentKama) return [];
             const kamaStore = Alpine.store('kama');
-            const uiStore = Alpine.store('threadUI');
-            return kamaStore.getKleshaNuts(uiStore.selectedThreadId);
+            return kamaStore.getKleshaNuts(this.currentKama.id);
         },
         
         // Get samskara lane nuts
         get samskaraLane() {
+            if (!this.currentKama) return [];
             const kamaStore = Alpine.store('kama');
-            const uiStore = Alpine.store('threadUI');
-            return kamaStore.getSamskaraNuts(uiStore.selectedThreadId);
+            return kamaStore.getSamskaraNuts(this.currentKama.id);
         },
         
         // Check samskara completion
         get hasCompleteSamskara() {
+            if (!this.currentKama) return false;
             const kamaStore = Alpine.store('kama');
-            const uiStore = Alpine.store('threadUI');
-            return kamaStore.hasCompleteSamskara(uiStore.selectedThreadId);
+            return kamaStore.hasCompleteSamskara(this.currentKama.id);
         },
         
         // Get root desires from store
@@ -66,13 +90,13 @@ document.addEventListener('alpine:init', () => {
         
         // Identify root desire
         identifyRootDesire() {
-            if (!this.selectedDesire) return;
+            if (!this.selectedDesire || !this.currentKama) return;
             
             const kamaStore = Alpine.store('kama');
             const uiStore = Alpine.store('threadUI');
             
             const success = kamaStore.identifyRootDesire(
-                uiStore.selectedThreadId, 
+                this.currentKama.id, 
                 this.selectedDesire
             );
             
@@ -106,12 +130,14 @@ document.addEventListener('alpine:init', () => {
         dropInSamskara(event) {
             event.preventDefault();
             
+            if (!this.currentKama) return;
+            
             const uiStore = Alpine.store('threadUI');
             const kamaStore = Alpine.store('kama');
             const nutId = uiStore.draggedNutId;
             
             if (nutId) {
-                kamaStore.moveToSamskara(nutId, uiStore.selectedThreadId);
+                kamaStore.moveToSamskara(this.currentKama.id, nutId);
                 uiStore.endDrag();
             }
         },
@@ -119,22 +145,26 @@ document.addEventListener('alpine:init', () => {
         dropInKlesha(event) {
             event.preventDefault();
             
+            if (!this.currentKama) return;
+            
             const uiStore = Alpine.store('threadUI');
             const kamaStore = Alpine.store('kama');
             const nutId = uiStore.draggedNutId;
             
             if (nutId) {
-                kamaStore.moveToKlesha(nutId, uiStore.selectedThreadId);
+                kamaStore.moveToKlesha(this.currentKama.id, nutId);
                 uiStore.endDrag();
             }
         },
         
         // Create seal
         createSeal() {
+            if (!this.currentKama) return;
+            
             const kamaStore = Alpine.store('kama');
             const uiStore = Alpine.store('threadUI');
             
-            const result = kamaStore.createSeal(uiStore.selectedThreadId);
+            const result = kamaStore.createSeal(this.currentKama.id);
             
             if (result.success) {
                 uiStore.startSealAnimation();
@@ -182,26 +212,26 @@ document.addEventListener('alpine:init', () => {
         
         // Get Kama info for current thread
         get currentKamaInfo() {
-            if (!this.currentThread || !this.currentThread.rootDesire) return null;
+            if (!this.currentKama || !this.currentKama.rootDesire) return null;
             
             const kamaStore = Alpine.store('kama');
-            const stats = kamaStore.kamaStats[this.currentThread.rootDesire.id];
+            const stats = kamaStore.kamaStats[this.currentKama.rootDesire.id];
             
             return {
-                ...this.currentThread.rootDesire,
-                hunger: stats ? kamaStore.getKamaHunger(this.currentThread.rootDesire.id) : 50,
+                ...this.currentKama.rootDesire,
+                hunger: stats ? kamaStore.getKamaHunger(this.currentKama.rootDesire.id) : 50,
                 bond: stats ? stats.bond : 0,
                 extractions: stats ? stats.extractions : 0
             };
         },
         
-        // Check if can identify desire (need 3+ NUTs)
+        // Check if can identify desire (need to be tainted but no root desire yet)
         get canIdentifyDesire() {
-            return this.currentThread && 
-                   this.currentThread.klesha && 
-                   !this.currentThread.rootDesire &&
+            return this.currentKama && 
+                   !this.currentKama.rootDesire &&
+                   this.currentThread && 
                    this.currentThread.nutIds && 
-                   this.currentThread.nutIds.length >= 3;
+                   this.currentThread.nutIds.length >= 1;
         }
     }));
 });
