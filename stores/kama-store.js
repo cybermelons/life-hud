@@ -235,6 +235,36 @@ document.addEventListener('alpine:init', () => {
                    types.includes('task');
         },
         
+        // Get samskara chain analysis
+        getSamskaraChainStatus(kamaId) {
+            const kama = this.kamas[kamaId];
+            if (!kama) return { complete: false, missing: ['note', 'urge', 'task'] };
+            
+            const appStore = Alpine.store('app');
+            const samskaraNuts = kama.samskaraNutIds.map(id => 
+                appStore.nuts.find(n => n.id === id)
+            ).filter(Boolean);
+            
+            const hasNote = samskaraNuts.some(n => n.type === 'note');
+            const hasUrge = samskaraNuts.some(n => n.type === 'urge');
+            const hasTask = samskaraNuts.some(n => n.type === 'task');
+            
+            const missing = [];
+            if (!hasNote) missing.push('note');
+            if (!hasUrge) missing.push('urge');
+            if (!hasTask) missing.push('task');
+            
+            return {
+                complete: hasNote && hasUrge && hasTask,
+                hasNote,
+                hasUrge,
+                hasTask,
+                missing,
+                nuts: samskaraNuts,
+                pattern: `${hasNote ? 'N' : '_'}→${hasUrge ? 'U' : '_'}→${hasTask ? 'T' : '_'}`
+            };
+        },
+        
         // Get samskara nuts for a Kama
         getSamskaraNuts(kamaId) {
             const kama = this.kamas[kamaId];
@@ -260,20 +290,45 @@ document.addEventListener('alpine:init', () => {
         // Create seal for Kama
         createSeal(kamaId) {
             const kama = this.kamas[kamaId];
-            if (!kama || !this.hasCompleteSamskara(kamaId)) {
-                return { success: false, message: 'Incomplete samskara chain' };
+            const chainStatus = this.getSamskaraChainStatus(kamaId);
+            
+            if (!kama || !chainStatus.complete) {
+                return { 
+                    success: false, 
+                    message: `Incomplete samskara chain. Missing: ${chainStatus.missing.join(', ')}`,
+                    chainStatus
+                };
             }
             
             const appStore = Alpine.store('app');
             
-            // Find the task in samskara chain
-            const task = this.getSamskaraNuts(kamaId).find(n => n.type === 'task');
+            // Find the NUTs in samskara chain
+            const note = chainStatus.nuts.find(n => n.type === 'note');
+            const urge = chainStatus.nuts.find(n => n.type === 'urge');
+            const task = chainStatus.nuts.find(n => n.type === 'task');
             
             if (task) {
+                // Create seal data
+                const seal = {
+                    id: `seal_${Date.now()}`,
+                    kamaId: kamaId,
+                    createdAt: new Date().toISOString(),
+                    noteContent: note?.content || '',
+                    urgeContent: urge?.content || '',
+                    taskContent: task.content,
+                    taskId: task.id,
+                    pattern: chainStatus.pattern,
+                    rootDesire: kama.rootDesire
+                };
+                
                 // Mark task as extraction trigger
                 task.extractionReady = true;
+                task.sealId = seal.id;
+                
+                // Update Kama state
                 kama.sealCreated = true;
                 kama.sealTask = task.id;
+                kama.seal = seal;
                 kama.state = 'sealed';
                 
                 appStore.saveNuts();
@@ -282,7 +337,9 @@ document.addEventListener('alpine:init', () => {
                 return { 
                     success: true, 
                     message: `Seal created! Complete "${task.content}" to extract the ${kama.rootDesire.name} Kama.`,
-                    task: task
+                    task: task,
+                    seal: seal,
+                    chainStatus
                 };
             }
             
@@ -302,35 +359,49 @@ document.addEventListener('alpine:init', () => {
             const kama = Object.values(this.kamas).find(k => k.sealTask === taskId);
             
             if (kama) {
+                // Calculate extraction power based on chain quality
+                const chainStatus = this.getSamskaraChainStatus(kama.id);
+                const extractionPower = this.calculateExtractionPower(kama);
+                
                 // Mark Kama as extracted
                 kama.state = 'extracted';
                 kama.completedAt = new Date().toISOString();
+                kama.extractionPower = extractionPower;
                 
-                // Track extraction
+                // Generate wisdom from the extraction
+                const wisdom = this.generateWisdom(kama);
+                
+                // Track extraction with details
                 const extraction = {
                     id: Date.now().toString(),
                     kamaId: kama.id,
                     threadId: kama.threadId,
                     kamaType: kama.rootDesire.id,
                     kamaName: kama.rootDesire.name,
-                    extractedAt: new Date().toISOString()
+                    extractedAt: new Date().toISOString(),
+                    power: extractionPower,
+                    wisdom: wisdom,
+                    seal: kama.seal,
+                    chainPattern: chainStatus.pattern
                 };
                 
                 this.extractions.push(extraction);
                 this.saveExtractions();
                 
-                // Update Kama stats
-                this.updateKamaStats(kama.rootDesire.id);
+                // Update Kama stats with extraction details
+                this.updateKamaStats(kama.rootDesire.id, extractionPower);
                 
                 // Mark task as completed
                 task.completed = true;
+                task.completedAt = new Date().toISOString();
                 
-                // Mark thread as completed
+                // Mark thread as completed with extraction data
                 const threadStore = Alpine.store('threads');
                 const thread = threadStore.getThread(kama.threadId);
                 if (thread) {
                     thread.completed = true;
                     thread.completedAt = new Date().toISOString();
+                    thread.extraction = extraction;
                     threadStore.saveThreads();
                 }
                 
@@ -339,38 +410,111 @@ document.addEventListener('alpine:init', () => {
                 
                 return {
                     success: true,
-                    message: `${kama.rootDesire.name} Kama has been satisfied!`,
-                    extraction: extraction
+                    message: `${kama.rootDesire.name} Kama has been satisfied! ${wisdom}`,
+                    extraction: extraction,
+                    wisdom: wisdom,
+                    power: extractionPower,
+                    rewards: this.getExtractionRewards(kama.rootDesire.id)
                 };
             }
             
             return { success: false, message: 'Kama not found' };
         },
         
+        // Calculate extraction power based on chain quality
+        calculateExtractionPower(kama) {
+            const baseValue = 10;
+            let multiplier = 1;
+            
+            // More NUTs in samskara = higher power
+            if (kama.samskaraNutIds.length > 3) multiplier += 0.5;
+            
+            // Faster completion = higher power
+            const timeElapsed = new Date() - new Date(kama.seal?.createdAt || Date.now());
+            const hoursElapsed = timeElapsed / (1000 * 60 * 60);
+            if (hoursElapsed < 1) multiplier += 0.5;
+            
+            // First extraction of this type = bonus
+            const stats = this.kamaStats[kama.rootDesire.id];
+            if (!stats || stats.extractions === 0) multiplier += 1;
+            
+            return Math.round(baseValue * multiplier);
+        },
+        
+        // Generate wisdom message from extraction
+        generateWisdom(kama) {
+            const wisdomMap = {
+                vishaya: "Physical cravings often mask deeper needs.",
+                kirti: "True recognition comes from within, not from others.",
+                bhoga: "Comfort zones prevent growth - discomfort teaches.",
+                aishvarya: "Control is an illusion; influence through example.",
+                iccha: "Endless wanting ends when we appreciate what is."
+            };
+            
+            return wisdomMap[kama.rootDesire.id] || "Every desire teaches us about ourselves.";
+        },
+        
+        // Get extraction rewards
+        getExtractionRewards(kamaType) {
+            const stats = this.kamaStats[kamaType] || {};
+            const rewards = [];
+            
+            // STR increase
+            rewards.push({ type: 'stat', name: 'STR', value: '+1' });
+            
+            // Bond increase
+            if (stats.bond) {
+                rewards.push({ type: 'bond', name: `${kamaType} Bond`, value: `${stats.bond}%` });
+            }
+            
+            // Totem unlock at 5 extractions
+            if (stats.extractions === 4) {
+                rewards.push({ type: 'unlock', name: `${kamaType} Totem`, value: 'UNLOCKED!' });
+            }
+            
+            return rewards;
+        },
+        
         // Update Kama stats after extraction
-        updateKamaStats(kamaType) {
+        updateKamaStats(kamaType, extractionPower = 10) {
             if (!this.kamaStats[kamaType]) {
                 this.kamaStats[kamaType] = {
                     encounters: 0,
                     extractions: 0,
+                    totalPower: 0,
                     lastExtraction: null,
                     bond: 0,
-                    hunger: 50
+                    hunger: 50,
+                    level: 1
                 };
             }
             
             const stats = this.kamaStats[kamaType];
             stats.encounters++;
             stats.extractions++;
+            stats.totalPower = (stats.totalPower || 0) + extractionPower;
             stats.lastExtraction = new Date().toISOString();
-            stats.bond = Math.min(100, stats.bond + 20);
+            
+            // Bond increases based on extraction power
+            const bondIncrease = Math.min(30, 10 + extractionPower);
+            stats.bond = Math.min(100, stats.bond + bondIncrease);
+            
+            // Hunger decreases significantly
             stats.hunger = Math.max(0, stats.hunger - 50);
+            
+            // Level up every 50 total power
+            stats.level = Math.floor(stats.totalPower / 50) + 1;
             
             // Check for totem creation (5 extractions)
             if (stats.extractions === 5) {
                 stats.totemCreated = true;
                 stats.totemCreatedAt = new Date().toISOString();
             }
+            
+            // Achievement unlocks
+            if (stats.extractions === 1) stats.firstExtraction = true;
+            if (stats.extractions === 10) stats.masterExtractor = true;
+            if (stats.bond >= 100) stats.maxBond = true;
             
             this.saveKamaStats();
         },

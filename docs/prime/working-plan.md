@@ -33,12 +33,12 @@
 - [x] Queue management (klesha ↔ samskara)
 - [x] Root desire identification on Kama
 
-#### Phase 3: Battle Flow (6 hours)
-- [ ] Samskara chain validation (N→U→T)
-- [ ] Seal creation from complete chain
-- [ ] Task generation from seal
-- [ ] Extraction sequence on task completion
-- [ ] Kama stats and progression
+#### Phase 3: Battle Flow (6 hours) ✅
+- [x] Samskara chain validation (N→U→T)
+- [x] Seal creation from complete chain
+- [x] Task generation from seal
+- [x] Extraction sequence on task completion
+- [x] Kama stats and progression
 
 #### Phase 4: UI Implementation (4 hours)
 - [ ] Responsive two-lane layout
