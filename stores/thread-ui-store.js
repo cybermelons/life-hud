@@ -64,7 +64,10 @@ document.addEventListener('alpine:init', () => {
         openThread(threadId) {
             this.selectedThreadId = threadId;
             this.currentView = 'thread';
-            this.scrollToTop();
+            // Use nextTick to ensure DOM updates before scrolling
+            if (window.scrollTo) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         },
         
         closeThread() {
