@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Threads - Life HUD</title>
+    <title>Kama Battle - Life HUD</title>
     
     <!-- Core Styles -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,107 +12,184 @@
     <!-- Alpine.js -->
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
-    <!-- App Scripts -->
+    <!-- App Scripts - Order matters! -->
     <script src="/app.js"></script>
-    <script src="/app-threads.js"></script>
+    <script src="/stores/thread-store.js"></script>
+    <script src="/stores/kama-store.js"></script>
+    <script src="/stores/thread-ui-store.js"></script>
+    <script src="/components/thread-list.js"></script>
+    <script src="/components/kama-battle.js"></script>
     
     <!-- Custom styles -->
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; }
-        .thread-arrow::after {
-            content: '↓';
-            display: block;
-            text-align: center;
-            opacity: 0.3;
-            margin: 0.5rem 0;
+        
+        /* All transitions 150ms for snappy feel */
+        * {
+            transition-duration: 150ms !important;
         }
+        
         .klesha-taint {
             background: linear-gradient(to bottom, rgba(239, 68, 68, 0.1), transparent);
             border-color: rgb(239 68 68 / 0.3);
+            animation: kleshaAppear 150ms ease-out;
         }
+        
         .samskara-glow {
             background: linear-gradient(to bottom, rgba(168, 85, 247, 0.1), transparent);
             border-color: rgb(168 85 247 / 0.3);
+            animation: samskaraAppear 150ms ease-out;
         }
-        .lane-separator {
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            height: 2px;
-            margin: 1rem 0;
+        
+        .drag-over {
+            background-color: rgba(168, 85, 247, 0.2);
+            border: 2px dashed rgb(168 85 247);
+            transition: all 150ms;
+        }
+        
+        @keyframes kleshaAppear {
+            from {
+                transform: scale(0.95);
+                opacity: 0;
+                background-color: rgba(239, 68, 68, 0.3);
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes samskaraAppear {
+            from {
+                transform: translateY(10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        /* Long press visual feedback */
+        .long-pressing {
+            animation: longPress 800ms ease-out;
+        }
+        
+        @keyframes longPress {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
+            }
+            100% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0.1);
+            }
         }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-100" x-data>
+<body class="bg-gray-900 text-gray-100">
     <!-- Main Container -->
     <div class="min-h-screen flex flex-col">
+        
         <!-- Header -->
-        <header class="bg-gray-800 border-b border-gray-700">
+        <header class="bg-gradient-to-b from-gray-900 to-gray-800 border-b border-gray-700">
             <div class="px-4 py-3 flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <a href="/" class="text-gray-400 hover:text-white">←</a>
-                    <h1 class="text-xl font-semibold">Threads</h1>
+                    <a href="/" class="text-gray-400 hover:text-white transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                        </svg>
+                    </a>
+                    <div>
+                        <h1 class="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Kama Battle</h1>
+                        <p class="text-xs text-gray-500">Transform desires into wisdom</p>
+                    </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button class="text-gray-400 hover:text-white p-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </button>
-                    <button class="text-gray-400 hover:text-white p-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                        </svg>
-                    </button>
+                    <div x-show="$store.threadUI.syncInProgress" class="animate-pulse">
+                        <div class="w-2 h-2 bg-blue-400 rounded-full"></div>
+                    </div>
                 </div>
             </div>
             
             <!-- Filter Tabs -->
-            <div class="px-4 pb-2 flex gap-2 overflow-x-auto">
-                <button @click="filter = 'all'" 
-                    :class="filter === 'all' ? 'bg-gray-700 text-white' : 'text-gray-400'"
-                    class="px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap">
-                    All
+            <div class="px-4 pb-3 flex gap-2 overflow-x-auto scrollbar-hide">
+                <button @click="$store.threadUI.setFilter('all')" 
+                    :class="$store.threadUI.filter === 'all' ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30' : 'bg-gray-800 text-gray-400 hover:text-white'"
+                    class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all">
+                    <span class="mr-1">🌟</span> All
                 </button>
-                <button @click="filter = 'unthreaded'"
-                    :class="filter === 'unthreaded' ? 'bg-gray-700 text-white' : 'text-gray-400'"
-                    class="px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap">
-                    Unthreaded
+                <button @click="$store.threadUI.setFilter('unthreaded')"
+                    :class="$store.threadUI.filter === 'unthreaded' ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30' : 'bg-gray-800 text-gray-400 hover:text-white'"
+                    class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all">
+                    <span class="mr-1">🔮</span> Solo
                 </button>
-                <button @click="filter = 'kleshas'"
-                    :class="filter === 'kleshas' ? 'bg-gray-700 text-white' : 'text-gray-400'"
-                    class="px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap">
-                    ⚠️ Kleshas
+                <button @click="$store.threadUI.setFilter('kleshas')"
+                    :class="$store.threadUI.filter === 'kleshas' ? 'bg-red-600 text-white shadow-lg shadow-red-600/30' : 'bg-gray-800 text-gray-400 hover:text-white'"
+                    class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all">
+                    <span class="mr-1">⚔️</span> Battle
                 </button>
-                <button @click="filter = 'library'"
-                    :class="filter === 'library' ? 'bg-gray-700 text-white' : 'text-gray-400'"
-                    class="px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap">
-                    📚 Library
+                <button @click="$store.threadUI.setFilter('completed')"
+                    :class="$store.threadUI.filter === 'completed' ? 'bg-green-600 text-white shadow-lg shadow-green-600/30' : 'bg-gray-800 text-gray-400 hover:text-white'"
+                    class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all">
+                    <span class="mr-1">✨</span> Extracted
                 </button>
             </div>
         </header>
 
-        <!-- Timeline View (default) -->
-        <main class="flex-1 overflow-y-auto" x-show="!selectedThread">
+        <!-- Timeline View -->
+        <main class="flex-1 overflow-y-auto pb-24" 
+              x-show="$store.threadUI.isTimelineView"
+              x-data="threadList">
             <div class="p-4 space-y-3">
+                <!-- Loading State -->
+                <div x-show="$store.threadUI.threadsLoading" class="text-center py-8 text-gray-500">
+                    Loading threads...
+                </div>
+                
                 <!-- Thread Cards -->
-                <template x-for="thread in filteredThreads" :key="thread.id">
+                <template x-for="thread in threads" :key="thread.id">
                     <div @click="openThread(thread)" 
-                        class="bg-gray-800 rounded-lg p-4 cursor-pointer hover:bg-gray-750 transition-colors">
-                        <div class="flex justify-between items-start mb-2">
+                        :class="isThreadTainted(thread.id) ? 'bg-gradient-to-r from-red-900/30 to-purple-900/30 border-red-600/30' : 'bg-gray-800 border-gray-700'"
+                        class="rounded-xl border p-4 cursor-pointer hover:scale-[1.02] transition-all shadow-lg">
+                        <div class="flex justify-between items-start">
                             <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <span x-text="thread.klesha ? '⚠️ KLESHA' : 'Thread #' + thread.id"
-                                        :class="thread.klesha ? 'text-red-400 font-semibold' : 'text-gray-400'"
-                                        class="text-sm"></span>
-                                    <span x-show="thread.nuts.length > 1" 
-                                        class="text-xs text-gray-500"
-                                        x-text="`(${thread.nuts.length} NUTs)`"></span>
-                                    <span x-show="thread.hasBonus" class="text-xs">🎁</span>
+                                <!-- Status Badge -->
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span x-show="isThreadTainted(thread.id)"
+                                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-red-600/20 text-red-400 animate-pulse">
+                                        ⚔️ Battle Ready
+                                    </span>
+                                    <span x-show="!isThreadTainted(thread.id) && thread.nutCount > 2"
+                                        class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-600/20 text-purple-400">
+                                        🌟 Active Thread
+                                    </span>
+                                    <span x-show="thread.completed" 
+                                        class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-600/20 text-green-400">
+                                        ✨ Extracted
+                                    </span>
                                 </div>
-                                <p class="text-gray-200" x-text="thread.preview"></p>
+                                
+                                <!-- Thread Content -->
+                                <p class="text-gray-100 font-medium mb-1" x-text="thread.preview"></p>
+                                
+                                <!-- Meta Info -->
+                                <div class="flex items-center gap-3 text-xs text-gray-500">
+                                    <span class="flex items-center gap-1">
+                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                                            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 1 1 0 000 2H4v10h12V5h-2a1 1 0 100-2 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" clip-rule="evenodd"/>
+                                        </svg>
+                                        <span x-text="`${thread.nutCount} NUTs`"></span>
+                                    </span>
+                                    <span x-text="thread.timestamp"></span>
+                                </div>
                             </div>
-                            <span class="text-xs text-gray-500" x-text="thread.timestamp"></span>
+                            
+                            <!-- Arrow Icon -->
+                            <div class="ml-4 text-gray-400">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </div>
                         </div>
                     </div>
                 </template>
@@ -124,50 +201,75 @@
                         <div class="flex justify-between items-start">
                             <div class="flex-1">
                                 <div class="flex items-center gap-2 mb-1">
-                                    <span class="text-xs text-gray-500">NUT #<span x-text="nut.id"></span> (solo)</span>
+                                    <span class="text-xs text-gray-500 uppercase" x-text="nut.type"></span>
+                                    <span class="text-xs text-gray-500">(solo)</span>
                                 </div>
                                 <p class="text-gray-200" x-text="nut.content"></p>
                             </div>
-                            <span class="text-xs text-gray-500" x-text="nut.timestamp"></span>
+                            <span class="text-xs text-gray-500" x-text="formatTimestamp(nut.timestamp)"></span>
                         </div>
                     </div>
                 </template>
+                
+                <!-- Empty State -->
+                <div x-show="threads.length === 0 && soloNuts.length === 0 && !$store.threadUI.threadsLoading"
+                     class="text-center py-12 text-gray-500">
+                    <p class="mb-4">No threads yet</p>
+                    <button @click="startNewThread()" 
+                            class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg">
+                        Create First Thread
+                    </button>
+                </div>
             </div>
         </main>
 
-        <!-- Thread View (when selected) -->
-        <main class="flex-1 overflow-y-auto" x-show="selectedThread" style="display: none;">
+        <!-- Thread View (Battle Mode) -->
+        <main class="flex-1 overflow-y-auto pb-24" 
+              x-show="$store.threadUI.isThreadView"
+              x-data="kamaBattle">
             <div class="p-4">
                 <!-- Thread Header -->
                 <div class="mb-4 bg-gray-800 rounded-lg p-4">
                     <div class="flex items-center justify-between mb-2">
                         <h2 class="text-lg font-semibold flex items-center gap-2">
-                            <span x-text="selectedThread?.klesha ? '⚠️ KLESHA Thread' : 'Thread'"></span>
-                            <span x-show="selectedThread?.rootDesire" 
+                            <span x-text="currentThread?.klesha ? '⚠️ KLESHA Thread' : 'Thread'"></span>
+                            <span x-show="currentThread?.rootDesire" 
                                 class="text-sm text-purple-400"
-                                x-text="selectedThread?.rootDesire"></span>
+                                x-text="currentThread?.rootDesire?.name"></span>
                         </h2>
-                        <button @click="closeThread" class="text-gray-400 hover:text-white">✕</button>
+                        <button @click="$store.threadUI.closeThread()" 
+                                class="text-gray-400 hover:text-white">✕</button>
                     </div>
                     
-                    <!-- State Indicator -->
-                    <div x-show="selectedThread?.klesha && !selectedThread?.rootDesire"
+                    <!-- Progress Indicators -->
+                    <div x-show="currentThread?.klesha && !currentThread?.rootDesire"
                         class="bg-yellow-900/30 text-yellow-400 rounded p-2 text-sm">
-                        Identify root desire to unlock samskara practice
+                        <span x-show="canIdentifyDesire">Ready to identify root desire</span>
+                        <span x-show="!canIdentifyDesire">Add more NUTs to identify pattern (need 3+)</span>
                     </div>
                     
-                    <div x-show="selectedThread?.rootDesire && !hasCompleteSamskara"
+                    <div x-show="currentThread?.rootDesire && !hasCompleteSamskara"
                         class="bg-purple-900/30 text-purple-400 rounded p-2 text-sm">
-                        Add Note + Urge + Task to complete samskara chain
+                        Build samskara chain: Add Note + Urge + Task
+                    </div>
+                    
+                    <div x-show="hasCompleteSamskara"
+                        class="bg-green-900/30 text-green-400 rounded p-2 text-sm">
+                        Samskara complete! Ready to create seal
                     </div>
                 </div>
 
                 <!-- Two Lane Interface (only when root desire identified) -->
-                <div x-show="selectedThread?.rootDesire" class="space-y-4">
-                    <!-- Klesha Lane (Top) -->
+                <div x-show="showSamskaraZone" class="space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-4">
+                    
+                    <!-- Klesha Lane (Left on desktop, Top on mobile) -->
                     <div class="bg-gray-800 rounded-lg p-4">
                         <h3 class="text-sm font-semibold text-red-400 mb-3">⚠️ KLESHA (Problem)</h3>
-                        <div class="space-y-2">
+                        <div class="space-y-2 min-h-[100px]"
+                             @dragover.prevent="dragOver($event, 'klesha')"
+                             @dragleave="dragLeave"
+                             @drop="dropInKlesha($event)"
+                             :class="$store.threadUI.dragOverZone === 'klesha' ? 'drag-over' : ''">
                             <template x-for="nut in kleshaLane" :key="nut.id">
                                 <div class="bg-gray-750 rounded p-3 klesha-taint cursor-move"
                                     @dragstart="dragStart($event, nut)"
@@ -178,21 +280,22 @@
                                             <span class="text-xs text-gray-500 uppercase" x-text="nut.type"></span>
                                             <p class="text-gray-200" x-text="nut.content"></p>
                                         </div>
-                                        <span class="text-xs text-gray-500" x-text="nut.timestamp"></span>
                                     </div>
-                                    <div class="thread-arrow"></div>
                                 </div>
                             </template>
+                            
+                            <div x-show="kleshaLane.length === 0" 
+                                class="text-center py-8 text-gray-500 text-sm">
+                                Klesha NUTs appear here
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Lane Separator -->
-                    <div class="lane-separator"></div>
+                    <!-- Separator (only on mobile) -->
+                    <div class="h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent md:hidden"></div>
 
-                    <!-- Samskara Lane (Bottom) -->
-                    <div class="bg-gray-800 rounded-lg p-4"
-                        @dragover.prevent
-                        @drop="dropInSamskara($event)">
+                    <!-- Samskara Lane (Right on desktop, Bottom on mobile) -->
+                    <div class="bg-gray-800 rounded-lg p-4">
                         <h3 class="text-sm font-semibold text-purple-400 mb-3 flex items-center justify-between">
                             <span>✨ SAMSKARA (Solution)</span>
                             <div class="flex gap-2 text-xs">
@@ -208,17 +311,22 @@
                             </div>
                         </h3>
                         
-                        <div class="space-y-2 min-h-[100px]">
+                        <div class="space-y-2 min-h-[100px]"
+                             @dragover.prevent="dragOver($event, 'samskara')"
+                             @dragleave="dragLeave"
+                             @drop="dropInSamskara($event)"
+                             :class="$store.threadUI.dragOverZone === 'samskara' ? 'drag-over' : ''">
                             <template x-for="nut in samskaraLane" :key="nut.id">
-                                <div class="bg-gray-750 rounded p-3 samskara-glow">
+                                <div class="bg-gray-750 rounded p-3 samskara-glow cursor-move"
+                                    @dragstart="dragStart($event, nut)"
+                                    @dragend="dragEnd"
+                                    draggable="true">
                                     <div class="flex justify-between items-start">
                                         <div>
                                             <span class="text-xs text-gray-500 uppercase" x-text="nut.type"></span>
                                             <p class="text-gray-200" x-text="nut.content"></p>
                                         </div>
-                                        <span class="text-xs text-gray-500" x-text="nut.timestamp"></span>
                                     </div>
-                                    <div class="thread-arrow"></div>
                                 </div>
                             </template>
                             
@@ -228,51 +336,64 @@
                             </div>
                             
                             <button x-show="!hasCompleteSamskara && samskaraLane.length > 0"
+                                @click="addSamskaraNut(nextSamskaraType().toLowerCase())"
                                 class="w-full py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm">
-                                + Add <span x-text="nextSamskaraType()"></span> to complete
+                                + Add <span x-text="nextSamskaraType()"></span> to complete chain
                             </button>
                         </div>
                     </div>
-
+                </div>
+                
+                <!-- Action Buttons (below lanes) -->
+                <div x-show="showSamskaraZone" class="mt-4 space-y-2">
                     <!-- Create Seal Button -->
-                    <button x-show="hasCompleteSamskara"
+                    <button x-show="hasCompleteSamskara && !currentKama?.sealCreated"
                         @click="createSeal"
                         class="w-full py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold">
                         ✨ Create Seal
                     </button>
+                    
+                    <!-- Complete Task Button (after seal) -->
+                    <button x-show="currentKama?.sealCreated && !currentThread?.completed"
+                        @click="completeTask(currentKama.sealTask)"
+                        class="w-full py-3 bg-green-600 hover:bg-green-700 rounded-lg font-semibold">
+                        ⚡ Complete Extraction
+                    </button>
                 </div>
 
                 <!-- Regular Thread View (no klesha/samskara separation) -->
-                <div x-show="!selectedThread?.rootDesire" class="space-y-2">
-                    <template x-for="(nut, index) in selectedThread?.nuts || []" :key="nut.id">
-                        <div>
-                            <div class="bg-gray-800 rounded-lg p-4"
-                                :class="nut.klesha ? 'klesha-taint' : ''">
-                                <div class="flex justify-between items-start">
-                                    <div class="flex-1">
-                                        <div class="flex items-center gap-2 mb-1">
-                                            <span class="text-xs text-gray-500 uppercase" x-text="nut.type"></span>
-                                            <span x-show="nut.klesha" class="text-xs text-red-400">⚠️ Klesha</span>
-                                        </div>
-                                        <p class="text-gray-200" x-text="nut.content"></p>
+                <div x-show="!showSamskaraZone" class="space-y-2">
+                    <template x-for="nut in $store.threads.getThreadNuts($store.threadUI.selectedThreadId)" :key="nut.id">
+                        <div class="bg-gray-800 rounded-lg p-4"
+                            :class="isNutKlesha(nut.id) ? 'klesha-taint' : ''">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="text-xs text-gray-500 uppercase" x-text="nut.type"></span>
+                                        <span x-show="isNutKlesha(nut.id)" class="text-xs text-red-400">⚠️ Klesha</span>
                                     </div>
-                                    <span class="text-xs text-gray-500" x-text="nut.timestamp"></span>
+                                    <p class="text-gray-200" x-text="nut.content"></p>
                                 </div>
+                                <!-- Klesha Toggle Button -->
+                                <button @click="isNutKlesha(nut.id) ? $store.app.unmarkNutKlesha(nut.id) : $store.app.markNutKlesha(nut.id)"
+                                        :class="isNutKlesha(nut.id) ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-700 hover:bg-gray-600'"
+                                        class="ml-2 px-3 py-1 rounded text-sm transition-colors">
+                                    <span x-text="isNutKlesha(nut.id) ? 'Unmark' : 'Mark Klesha'"></span>
+                                </button>
                             </div>
-                            <div x-show="index < selectedThread.nuts.length - 1" class="thread-arrow"></div>
                         </div>
                     </template>
                 </div>
 
                 <!-- Thread Actions -->
                 <div class="mt-6 flex gap-2">
-                    <button x-show="!selectedThread?.klesha"
+                    <button x-show="!currentThread?.klesha"
                         @click="markKlesha"
                         class="flex-1 py-2 bg-red-600 hover:bg-red-700 rounded text-sm">
-                        ⚠️ Mark Klesha
+                        ⚠️ Mark as Klesha
                     </button>
-                    <button x-show="selectedThread?.klesha && !selectedThread?.rootDesire && selectedThread?.nuts?.length >= 3"
-                        @click="showIdentifyModal = true"
+                    <button x-show="canIdentifyDesire"
+                        @click="openIdentifyModal"
                         class="flex-1 py-2 bg-purple-600 hover:bg-purple-700 rounded text-sm">
                         🔮 Identify Root Desire
                     </button>
@@ -280,20 +401,65 @@
             </div>
         </main>
 
-        <!-- Bottom Actions -->
-        <div class="bg-gray-800 border-t border-gray-700 p-4">
+        <!-- Draggable NUT Bar (Always Visible) -->
+        <div x-data="{ 
+                collapsed: false, 
+                dragStart: null,
+                dragDistance: 0,
+                handleDragStart(e) {
+                    this.dragStart = e.touches ? e.touches[0].clientY : e.clientY;
+                },
+                handleDragMove(e) {
+                    if (!this.dragStart) return;
+                    const currentY = e.touches ? e.touches[0].clientY : e.clientY;
+                    this.dragDistance = this.dragStart - currentY;
+                    
+                    // If dragged up more than 50px, collapse
+                    if (this.dragDistance > 50) {
+                        this.collapsed = true;
+                        this.dragStart = null;
+                    }
+                    // If dragged down more than 50px, expand
+                    else if (this.dragDistance < -50) {
+                        this.collapsed = false;
+                        this.dragStart = null;
+                    }
+                },
+                handleDragEnd() {
+                    this.dragStart = null;
+                    this.dragDistance = 0;
+                }
+             }"
+             :class="collapsed ? 'transform translate-y-16' : ''"
+             class="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 transition-transform duration-150 z-50">
+            
+            <!-- Drag Handle -->
+            <div @mousedown="handleDragStart($event)"
+                 @touchstart="handleDragStart($event)"
+                 @mousemove="handleDragMove($event)"
+                 @touchmove="handleDragMove($event)"
+                 @mouseup="handleDragEnd()"
+                 @touchend="handleDragEnd()"
+                 @mouseleave="handleDragEnd()"
+                 class="w-full h-6 bg-gray-750 cursor-ns-resize flex items-center justify-center">
+                <div class="w-12 h-1 bg-gray-600 rounded-full"></div>
+            </div>
+            
+            <!-- NUT Input Area -->
+            <div x-show="!collapsed" class="p-4">
             <div class="flex gap-2">
                 <input type="text" 
-                    x-model="newNutContent"
-                    @keydown.enter="addNut"
+                    x-model="$store.threadUI.newNutContent"
+                    @keydown.enter="$store.app.nutContent = $store.threadUI.newNutContent; $store.app.addNut(); $store.threadUI.newNutContent = ''"
                     placeholder="What's happening?"
+                    data-nut-input
                     class="flex-1 bg-gray-700 rounded-lg px-4 py-2 text-gray-100 placeholder-gray-400">
                 <div class="flex gap-1">
-                    <button @click="nutType = 'note'; addNut()" 
+                    <button @click="$store.app.nutType = 'note'; $store.app.nutContent = $store.threadUI.newNutContent; $store.app.addNut(); $store.threadUI.newNutContent = ''" 
                         class="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm">N</button>
-                    <button @click="nutType = 'urge'; addNut()"
+                    <button @click="$store.app.nutType = 'urge'; $store.app.nutContent = $store.threadUI.newNutContent; $store.app.addNut(); $store.threadUI.newNutContent = ''"
                         class="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm">U</button>
-                    <button @click="nutType = 'task'; addNut()"
+                    <button @click="$store.app.nutType = 'task'; $store.app.nutContent = $store.threadUI.newNutContent; $store.app.addNut(); $store.threadUI.newNutContent = ''"
                         class="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm">T</button>
                 </div>
             </div>
@@ -301,9 +467,10 @@
     </div>
 
     <!-- Identify Root Desire Modal -->
-    <div x-show="showIdentifyModal" 
-        @click.away="showIdentifyModal = false"
-        class="fixed inset-0 bg-black/50 flex items-center justify-center p-4"
+    <div x-show="$store.threadUI.showIdentifyModal" 
+        @click.away="$store.threadUI.closeIdentifyModal()"
+        x-data="kamaBattle"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
         style="display: none;">
         <div class="bg-gray-800 rounded-lg p-6 max-w-md w-full">
             <h3 class="text-lg font-semibold mb-4">Identify Root Desire</h3>
@@ -323,182 +490,29 @@
             </div>
             
             <div class="flex gap-2">
-                <button @click="showIdentifyModal = false" 
+                <button @click="$store.threadUI.closeIdentifyModal()" 
                     class="flex-1 py-2 bg-gray-700 hover:bg-gray-600 rounded">Cancel</button>
-                <button @click="identifyRootDesire" 
+                <button @click="identifyRootDesire()" 
                     class="flex-1 py-2 bg-purple-600 hover:bg-purple-700 rounded font-semibold">Confirm</button>
             </div>
         </div>
     </div>
 
-    <!-- Thread App Logic -->
+    <!-- Error Toast -->
+    <div x-show="$store.threadUI.showError"
+         x-transition
+         class="fixed bottom-20 left-4 right-4 bg-red-600 text-white p-3 rounded-lg z-50">
+        <p x-text="$store.threadUI.lastError"></p>
+    </div>
+
+    <!-- Initialize stores on load -->
     <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('threadApp', () => ({
-                filter: 'all',
-                threads: [],
-                nuts: [],
-                selectedThread: null,
-                selectedNut: null,
-                newNutContent: '',
-                nutType: 'note',
-                showIdentifyModal: false,
-                selectedDesire: '',
-                draggedNut: null,
-                
-                rootDesires: [
-                    { id: 'vishaya', name: 'Vishaya', description: 'Sensory pleasure - "I just want stimulation"' },
-                    { id: 'kirti', name: 'Kirti', description: 'Recognition/validation - "I need to feel seen and valued"' },
-                    { id: 'bhoga', name: 'Bhoga', description: 'Comfort/avoidance - "I\'m avoiding something painful"' },
-                    { id: 'aishvarya', name: 'Aishvarya', description: 'Power/control - "I need to feel in control"' },
-                    { id: 'iccha', name: 'Iccha', description: 'Endless craving - "Nothing is ever enough"' }
-                ],
-
-                init() {
-                    // Load sample data
-                    this.loadSampleData();
-                },
-
-                loadSampleData() {
-                    // Sample NUTs
-                    this.nuts = [
-                        { id: 1, content: 'Instagram scrolling made me feel inadequate', type: 'note', timestamp: '7:09pm', threadId: null, klesha: false },
-                        { id: 2, content: 'I want to feel connected', type: 'urge', timestamp: '7:15pm', threadId: null, klesha: false },
-                        { id: 3, content: 'Spent 3 hours doom scrolling', type: 'urge', timestamp: '7:20pm', threadId: 1, klesha: true },
-                        { id: 4, content: 'I notice I\'m comparing myself', type: 'note', timestamp: '7:25pm', threadId: 1, klesha: true },
-                        { id: 5, content: 'I want real connection', type: 'urge', timestamp: '7:30pm', threadId: 1, klesha: true },
-                        { id: 6, content: 'Text Sarah about coffee', type: 'task', timestamp: '7:35pm', threadId: 1, klesha: true }
-                    ];
-
-                    // Sample threads
-                    this.threads = [
-                        { 
-                            id: 1, 
-                            nuts: [3, 4, 5, 6], 
-                            klesha: true, 
-                            rootDesire: null,
-                            preview: 'Spent 3 hours doom scrolling...',
-                            timestamp: '7:20pm',
-                            hasBonus: true
-                        }
-                    ];
-                },
-
-                get filteredThreads() {
-                    if (this.filter === 'all') return this.threads;
-                    if (this.filter === 'kleshas') return this.threads.filter(t => t.klesha);
-                    return this.threads;
-                },
-
-                get soloNuts() {
-                    return this.nuts.filter(n => !n.threadId);
-                },
-
-                get kleshaLane() {
-                    if (!this.selectedThread?.rootDesire) return [];
-                    return this.nuts.filter(n => n.threadId === this.selectedThread.id && n.klesha);
-                },
-
-                get samskaraLane() {
-                    if (!this.selectedThread?.rootDesire) return [];
-                    return this.nuts.filter(n => n.threadId === this.selectedThread.id && n.samskara);
-                },
-
-                get hasCompleteSamskara() {
-                    const samskara = this.samskaraLane;
-                    const types = samskara.map(n => n.type);
-                    return types.includes('note') && types.includes('urge') && types.includes('task');
-                },
-
-                hasSamskaraType(type) {
-                    return this.samskaraLane.some(n => n.type === type);
-                },
-
-                nextSamskaraType() {
-                    const samskara = this.samskaraLane;
-                    const types = samskara.map(n => n.type);
-                    if (!types.includes('note')) return 'Note';
-                    if (!types.includes('urge')) return 'Urge';
-                    if (!types.includes('task')) return 'Task';
-                    return '';
-                },
-
-                openThread(thread) {
-                    this.selectedThread = thread;
-                    this.selectedThread.nuts = this.nuts.filter(n => n.threadId === thread.id);
-                },
-
-                closeThread() {
-                    this.selectedThread = null;
-                },
-
-                selectNut(nut) {
-                    this.selectedNut = nut;
-                },
-
-                markKlesha() {
-                    if (!this.selectedThread) return;
-                    this.selectedThread.klesha = true;
-                    this.nuts.forEach(n => {
-                        if (n.threadId === this.selectedThread.id) {
-                            n.klesha = true;
-                        }
-                    });
-                },
-
-                identifyRootDesire() {
-                    if (!this.selectedDesire || !this.selectedThread) return;
-                    const desire = this.rootDesires.find(d => d.id === this.selectedDesire);
-                    this.selectedThread.rootDesire = desire.name;
-                    this.showIdentifyModal = false;
-                },
-
-                dragStart(event, nut) {
-                    this.draggedNut = nut;
-                    event.dataTransfer.effectAllowed = 'move';
-                },
-
-                dragEnd() {
-                    this.draggedNut = null;
-                },
-
-                dropInSamskara(event) {
-                    event.preventDefault();
-                    if (!this.draggedNut) return;
-                    
-                    // Move NUT from klesha to samskara
-                    this.draggedNut.klesha = false;
-                    this.draggedNut.samskara = true;
-                    this.draggedNut = null;
-                },
-
-                addNut() {
-                    if (!this.newNutContent.trim()) return;
-                    
-                    const newNut = {
-                        id: Math.max(...this.nuts.map(n => n.id)) + 1,
-                        content: this.newNutContent,
-                        type: this.nutType,
-                        timestamp: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
-                        threadId: this.selectedThread?.id || null,
-                        klesha: false,
-                        samskara: false
-                    };
-                    
-                    this.nuts.push(newNut);
-                    
-                    if (this.selectedThread) {
-                        this.selectedThread.nuts.push(newNut);
-                    }
-                    
-                    this.newNutContent = '';
-                },
-
-                createSeal() {
-                    // TODO: Implement seal creation
-                    alert('Seal created! Task completion ritual begins...');
-                }
-            }));
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize stores after Alpine is ready
+            setTimeout(() => {
+                Alpine.store('threads')?.init();
+                Alpine.store('kama')?.init();
+            }, 100);
         });
     </script>
 </body>
