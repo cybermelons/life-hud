@@ -141,11 +141,12 @@
                 <!-- Thread Cards -->
                 <template x-for="thread in threads" :key="thread.id">
                     <div @click="openThread(thread)" 
-                        class="bg-gray-800 rounded-lg p-4 cursor-pointer hover:bg-gray-750 transition-colors">
+                        :class="isThreadTainted(thread.id) ? 'tainted-thread' : 'bg-gray-800'"
+                        class="rounded-lg p-4 cursor-pointer hover:bg-gray-750 transition-colors">
                         <div class="flex justify-between items-start mb-2">
                             <div class="flex-1">
                                 <div class="flex items-center gap-2 mb-1">
-                                    <span x-text="thread.klesha ? '⚠️ KLESHA' : 'Thread'"
+                                    <span x-text="isThreadTainted(thread.id) ? '⚠️ TAINTED' : 'Thread'"
                                         :class="thread.klesha ? 'text-red-400 font-semibold' : 'text-gray-400'"
                                         class="text-sm"></span>
                                     <span x-show="thread.nutCount > 1" 
@@ -332,20 +333,21 @@
                 <div x-show="!showSamskaraZone" class="space-y-2">
                     <template x-for="nut in $store.threads.getThreadNuts($store.threadUI.selectedThreadId)" :key="nut.id">
                         <div class="bg-gray-800 rounded-lg p-4"
-                            :class="isNutKlesha(nut.id) ? 'klesha-taint' : ''"
-                            @mousedown="handleNutMouseDown(nut.id, $event)"
-                            @touchstart="handleNutMouseDown(nut.id, $event)"
-                            @mouseup="handleNutMouseUp()"
-                            @touchend="handleNutMouseUp()"
-                            @mouseleave="handleNutMouseLeave()">
+                            :class="isNutKlesha(nut.id) ? 'klesha-taint' : ''">
                             <div class="flex justify-between items-start">
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2 mb-1">
                                         <span class="text-xs text-gray-500 uppercase" x-text="nut.type"></span>
-                                        <span x-show="nut.klesha" class="text-xs text-red-400">⚠️ Klesha</span>
+                                        <span x-show="isNutKlesha(nut.id)" class="text-xs text-red-400">⚠️ Klesha</span>
                                     </div>
                                     <p class="text-gray-200" x-text="nut.content"></p>
                                 </div>
+                                <!-- Klesha Toggle Button -->
+                                <button @click="isNutKlesha(nut.id) ? $store.app.unmarkNutKlesha(nut.id) : $store.app.markNutKlesha(nut.id)"
+                                        :class="isNutKlesha(nut.id) ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-700 hover:bg-gray-600'"
+                                        class="ml-2 px-3 py-1 rounded text-sm transition-colors">
+                                    <span x-text="isNutKlesha(nut.id) ? 'Unmark' : 'Mark Klesha'"></span>
+                                </button>
                             </div>
                         </div>
                     </template>
