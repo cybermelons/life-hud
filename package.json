@@ -3,6 +3,9 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
+    "dev": "wrangler dev --local ",
+    "serve": "wrangler dev --local ",
+    "preview": "wrangler dev",
     "deploy": "wrangler deploy"
   },
   "dependencies": {

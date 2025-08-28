@@ -8,6 +8,7 @@ export default {
       '/': '/index.html',
       '/inventory': '/inventory.html',
       '/library': '/library.html',
+      '/threads': '/threads.html',
       '/mind': '/mind/index.html',
       '/body': '/body/index.html',
       '/mind/feelings': '/mind/feelings.html',

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kama Battle Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Load stores -->
+    <script src="/app.js"></script>
+    <script src="/stores/thread-store.js"></script>
+    <script src="/stores/kama-store.js"></script>
+    <script src="/stores/thread-ui-store.js"></script>
+    <script src="/components/thread-list.js"></script>
+    <script src="/components/kama-battle.js"></script>
+    
+    <style>
+        .klesha-mark {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: 2px solid rgba(239, 68, 68, 0.5);
+        }
+        .tainted-thread {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 p-4">
+    <div x-data="testKama" class="max-w-4xl mx-auto space-y-4">
+        <h1 class="text-2xl font-bold mb-4">Kama Battle System Test</h1>
+        
+        <!-- Test Controls -->
+        <div class="bg-gray-800 rounded-lg p-4 space-y-2">
+            <h2 class="text-lg font-semibold mb-2">Test Controls</h2>
+            <button @click="createTestData()" class="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700">
+                Create Test NUTs & Thread
+            </button>
+            <button @click="markFirstNutKlesha()" class="px-4 py-2 bg-red-600 rounded hover:bg-red-700 ml-2">
+                Mark First NUT as Klesha
+            </button>
+            <button @click="identifyRootDesire()" class="px-4 py-2 bg-purple-600 rounded hover:bg-purple-700 ml-2">
+                Identify Root Desire
+            </button>
+        </div>
+        
+        <!-- Current State -->
+        <div class="bg-gray-800 rounded-lg p-4">
+            <h2 class="text-lg font-semibold mb-2">Current State</h2>
+            <div class="space-y-1 text-sm">
+                <p>Threads: <span x-text="threadCount"></span></p>
+                <p>NUTs: <span x-text="nutCount"></span></p>
+                <p>Klesha NUTs: <span x-text="kleshaCount"></span></p>
+                <p>Tainted Threads: <span x-text="taintedCount"></span></p>
+                <p>Kamas: <span x-text="kamaCount"></span></p>
+            </div>
+        </div>
+        
+        <!-- Thread Display -->
+        <div class="space-y-4">
+            <template x-for="thread in threads" :key="thread.id">
+                <div :class="isThreadTainted(thread.id) ? 'tainted-thread' : 'bg-gray-800'" 
+                     class="rounded-lg p-4">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="font-semibold">
+                            Thread #<span x-text="thread.id.slice(-4)"></span>
+                            <span x-show="isThreadTainted(thread.id)" class="text-red-400 ml-2">⚠️ TAINTED</span>
+                        </h3>
+                        <span x-show="getKamaForThread(thread.id)" class="text-purple-400">
+                            Kama: <span x-text="getKamaState(thread.id)"></span>
+                        </span>
+                    </div>
+                    
+                    <!-- Thread NUTs -->
+                    <div class="space-y-2">
+                        <template x-for="nutId in thread.nutIds" :key="nutId">
+                            <div :class="isNutKlesha(nutId) ? 'klesha-mark' : 'bg-gray-700'" 
+                                 class="p-2 rounded text-sm flex justify-between items-center">
+                                <div>
+                                    <span x-text="getNut(nutId)?.type"></span>: 
+                                    <span x-text="getNut(nutId)?.content"></span>
+                                    <span x-show="isNutKlesha(nutId)" class="ml-2 text-red-300">⚠️ klesha</span>
+                                </div>
+                                <button @click="isNutKlesha(nutId) ? Alpine.store('app').unmarkNutKlesha(nutId) : Alpine.store('app').markNutKlesha(nutId)"
+                                        :class="isNutKlesha(nutId) ? 'bg-red-600' : 'bg-gray-600'"
+                                        class="ml-2 px-2 py-1 rounded text-xs">
+                                    <span x-text="isNutKlesha(nutId) ? '✗' : 'Mark'"></span>
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+                    
+                    <!-- Kama Queues if tainted -->
+                    <div x-show="getKamaForThread(thread.id)" class="mt-4 grid grid-cols-2 gap-4">
+                        <div class="bg-red-900/20 p-2 rounded">
+                            <h4 class="text-sm font-semibold text-red-400 mb-1">Klesha Queue</h4>
+                            <div class="text-xs space-y-1">
+                                <template x-for="nutId in getKleshaQueue(thread.id)" :key="nutId">
+                                    <div class="bg-red-900/30 p-1 rounded">
+                                        <span x-text="getNut(nutId)?.type"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="bg-purple-900/20 p-2 rounded">
+                            <h4 class="text-sm font-semibold text-purple-400 mb-1">Samskara Queue</h4>
+                            <div class="text-xs space-y-1">
+                                <template x-for="nutId in getSamskaraQueue(thread.id)" :key="nutId">
+                                    <div class="bg-purple-900/30 p-1 rounded">
+                                        <span x-text="getNut(nutId)?.type"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('testKama', () => ({
+                longPressTimer: null,
+                
+                init() {
+                    // Initialize stores
+                    Alpine.store('app').init();
+                    Alpine.store('threads').init();
+                    Alpine.store('kama').init();
+                },
+                
+                get threads() {
+                    return Alpine.store('threads').threads;
+                },
+                
+                get threadCount() {
+                    return this.threads.length;
+                },
+                
+                get nutCount() {
+                    return Alpine.store('app').nuts.length;
+                },
+                
+                get kleshaCount() {
+                    return Alpine.store('app').kleshaSet.size;
+                },
+                
+                get taintedCount() {
+                    const threadStore = Alpine.store('threads');
+                    return this.threads.filter(t => threadStore.isThreadTainted(t.id)).length;
+                },
+                
+                get kamaCount() {
+                    return Object.keys(Alpine.store('kama').kamas).length;
+                },
+                
+                createTestData() {
+                    const appStore = Alpine.store('app');
+                    const threadStore = Alpine.store('threads');
+                    
+                    // Create test NUTs
+                    const nut1 = {
+                        id: Date.now().toString(),
+                        content: 'I keep checking social media',
+                        type: 'note',
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    const nut2 = {
+                        id: (Date.now() + 1).toString(),
+                        content: 'I want to feel connected',
+                        type: 'urge',
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    const nut3 = {
+                        id: (Date.now() + 2).toString(),
+                        content: 'Call a friend instead',
+                        type: 'task',
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    appStore.nuts.push(nut1, nut2, nut3);
+                    appStore.saveNuts();
+                    
+                    // Create thread with these NUTs
+                    const thread = threadStore.createThread([nut1.id, nut2.id, nut3.id]);
+                    console.log('Created thread:', thread);
+                },
+                
+                markFirstNutKlesha() {
+                    const thread = this.threads[0];
+                    if (thread && thread.nutIds.length > 0) {
+                        Alpine.store('app').markNutKlesha(thread.nutIds[0]);
+                        console.log('Marked NUT as klesha:', thread.nutIds[0]);
+                    }
+                },
+                
+                identifyRootDesire() {
+                    const thread = this.threads[0];
+                    if (thread) {
+                        const kamaStore = Alpine.store('kama');
+                        const kama = kamaStore.ensureKamaForThread(thread.id);
+                        if (kama) {
+                            kamaStore.identifyRootDesire(kama.id, 'vishaya');
+                            console.log('Identified root desire for Kama:', kama);
+                        }
+                    }
+                },
+                
+                isThreadTainted(threadId) {
+                    return Alpine.store('threads').isThreadTainted(threadId);
+                },
+                
+                isNutKlesha(nutId) {
+                    return Alpine.store('app').isNutKlesha(nutId);
+                },
+                
+                getNut(nutId) {
+                    return Alpine.store('app').nuts.find(n => n.id === nutId);
+                },
+                
+                getKamaForThread(threadId) {
+                    const kamaStore = Alpine.store('kama');
+                    const kamaId = kamaStore.threadIdToKamaId[threadId];
+                    return kamaId ? kamaStore.kamas[kamaId] : null;
+                },
+                
+                getKamaState(threadId) {
+                    const kama = this.getKamaForThread(threadId);
+                    return kama ? kama.state : 'none';
+                },
+                
+                getKleshaQueue(threadId) {
+                    const kama = this.getKamaForThread(threadId);
+                    return kama ? kama.kleshaNutIds : [];
+                },
+                
+                getSamskaraQueue(threadId) {
+                    const kama = this.getKamaForThread(threadId);
+                    return kama ? kama.samskaraNutIds : [];
+                },
+                
+                startLongPress(nutId, event) {
+                    if (this.longPressTimer) clearTimeout(this.longPressTimer);
+                    
+                    this.longPressTimer = setTimeout(() => {
+                        Alpine.store('app').markNutKlesha(nutId);
+                        console.log('Marked NUT as klesha via long press:', nutId);
+                        if (navigator.vibrate) navigator.vibrate(50);
+                    }, 800);
+                    
+                    event.preventDefault();
+                },
+                
+                endLongPress() {
+                    if (this.longPressTimer) {
+                        clearTimeout(this.longPressTimer);
+                        this.longPressTimer = null;
+                    }
+                }
+            }));
+        });
+    </script>
+</body>
+</html>
