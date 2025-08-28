@@ -23,17 +23,65 @@
     <!-- Custom styles -->
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; }
+        
+        /* All transitions 150ms for snappy feel */
+        * {
+            transition-duration: 150ms !important;
+        }
+        
         .klesha-taint {
             background: linear-gradient(to bottom, rgba(239, 68, 68, 0.1), transparent);
             border-color: rgb(239 68 68 / 0.3);
+            animation: kleshaAppear 150ms ease-out;
         }
+        
         .samskara-glow {
             background: linear-gradient(to bottom, rgba(168, 85, 247, 0.1), transparent);
             border-color: rgb(168 85 247 / 0.3);
+            animation: samskaraAppear 150ms ease-out;
         }
+        
         .drag-over {
             background-color: rgba(168, 85, 247, 0.2);
             border: 2px dashed rgb(168 85 247);
+            transition: all 150ms;
+        }
+        
+        @keyframes kleshaAppear {
+            from {
+                transform: scale(0.95);
+                opacity: 0;
+                background-color: rgba(239, 68, 68, 0.3);
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes samskaraAppear {
+            from {
+                transform: translateY(10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        /* Long press visual feedback */
+        .long-pressing {
+            animation: longPress 800ms ease-out;
+        }
+        
+        @keyframes longPress {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
+            }
+            100% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0.1);
+            }
         }
     </style>
 </head>
@@ -81,7 +129,7 @@
         </header>
 
         <!-- Timeline View -->
-        <main class="flex-1 overflow-y-auto" 
+        <main class="flex-1 overflow-y-auto pb-24" 
               x-show="$store.threadUI.isTimelineView"
               x-data="threadList">
             <div class="p-4 space-y-3">
@@ -143,7 +191,7 @@
         </main>
 
         <!-- Thread View (Battle Mode) -->
-        <main class="flex-1 overflow-y-auto" 
+        <main class="flex-1 overflow-y-auto pb-24" 
               x-show="$store.threadUI.isThreadView"
               x-data="kamaBattle">
             <div class="p-4">
@@ -179,9 +227,9 @@
                 </div>
 
                 <!-- Two Lane Interface (only when root desire identified) -->
-                <div x-show="currentThread?.rootDesire" class="space-y-4">
+                <div x-show="showSamskaraZone" class="space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-4">
                     
-                    <!-- Klesha Lane (Top) -->
+                    <!-- Klesha Lane (Left on desktop, Top on mobile) -->
                     <div class="bg-gray-800 rounded-lg p-4">
                         <h3 class="text-sm font-semibold text-red-400 mb-3">⚠️ KLESHA (Problem)</h3>
                         <div class="space-y-2 min-h-[100px]"
@@ -210,10 +258,10 @@
                         </div>
                     </div>
 
-                    <!-- Separator -->
-                    <div class="h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent"></div>
+                    <!-- Separator (only on mobile) -->
+                    <div class="h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent md:hidden"></div>
 
-                    <!-- Samskara Lane (Bottom) -->
+                    <!-- Samskara Lane (Right on desktop, Bottom on mobile) -->
                     <div class="bg-gray-800 rounded-lg p-4">
                         <h3 class="text-sm font-semibold text-purple-400 mb-3 flex items-center justify-between">
                             <span>✨ SAMSKARA (Solution)</span>
@@ -261,27 +309,35 @@
                             </button>
                         </div>
                     </div>
-
+                </div>
+                
+                <!-- Action Buttons (below lanes) -->
+                <div x-show="showSamskaraZone" class="mt-4 space-y-2">
                     <!-- Create Seal Button -->
-                    <button x-show="hasCompleteSamskara && !currentThread?.sealCreated"
+                    <button x-show="hasCompleteSamskara && !currentKama?.sealCreated"
                         @click="createSeal"
                         class="w-full py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold">
                         ✨ Create Seal
                     </button>
                     
                     <!-- Complete Task Button (after seal) -->
-                    <button x-show="currentThread?.sealCreated && !currentThread?.completed"
-                        @click="completeTask(currentThread.sealTask)"
+                    <button x-show="currentKama?.sealCreated && !currentThread?.completed"
+                        @click="completeTask(currentKama.sealTask)"
                         class="w-full py-3 bg-green-600 hover:bg-green-700 rounded-lg font-semibold">
                         ⚡ Complete Extraction
                     </button>
                 </div>
 
                 <!-- Regular Thread View (no klesha/samskara separation) -->
-                <div x-show="!currentThread?.rootDesire" class="space-y-2">
+                <div x-show="!showSamskaraZone" class="space-y-2">
                     <template x-for="nut in $store.threads.getThreadNuts($store.threadUI.selectedThreadId)" :key="nut.id">
                         <div class="bg-gray-800 rounded-lg p-4"
-                            :class="nut.klesha ? 'klesha-taint' : ''">
+                            :class="isNutKlesha(nut.id) ? 'klesha-taint' : ''"
+                            @mousedown="handleNutMouseDown(nut.id, $event)"
+                            @touchstart="handleNutMouseDown(nut.id, $event)"
+                            @mouseup="handleNutMouseUp()"
+                            @touchend="handleNutMouseUp()"
+                            @mouseleave="handleNutMouseLeave()">
                             <div class="flex justify-between items-start">
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2 mb-1">
@@ -311,8 +367,52 @@
             </div>
         </main>
 
-        <!-- Bottom Input -->
-        <div class="bg-gray-800 border-t border-gray-700 p-4">
+        <!-- Draggable NUT Bar (Always Visible) -->
+        <div x-data="{ 
+                collapsed: false, 
+                dragStart: null,
+                dragDistance: 0,
+                handleDragStart(e) {
+                    this.dragStart = e.touches ? e.touches[0].clientY : e.clientY;
+                },
+                handleDragMove(e) {
+                    if (!this.dragStart) return;
+                    const currentY = e.touches ? e.touches[0].clientY : e.clientY;
+                    this.dragDistance = this.dragStart - currentY;
+                    
+                    // If dragged up more than 50px, collapse
+                    if (this.dragDistance > 50) {
+                        this.collapsed = true;
+                        this.dragStart = null;
+                    }
+                    // If dragged down more than 50px, expand
+                    else if (this.dragDistance < -50) {
+                        this.collapsed = false;
+                        this.dragStart = null;
+                    }
+                },
+                handleDragEnd() {
+                    this.dragStart = null;
+                    this.dragDistance = 0;
+                }
+             }"
+             :class="collapsed ? 'transform translate-y-16' : ''"
+             class="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 transition-transform duration-150 z-50">
+            
+            <!-- Drag Handle -->
+            <div @mousedown="handleDragStart($event)"
+                 @touchstart="handleDragStart($event)"
+                 @mousemove="handleDragMove($event)"
+                 @touchmove="handleDragMove($event)"
+                 @mouseup="handleDragEnd()"
+                 @touchend="handleDragEnd()"
+                 @mouseleave="handleDragEnd()"
+                 class="w-full h-6 bg-gray-750 cursor-ns-resize flex items-center justify-center">
+                <div class="w-12 h-1 bg-gray-600 rounded-full"></div>
+            </div>
+            
+            <!-- NUT Input Area -->
+            <div x-show="!collapsed" class="p-4">
             <div class="flex gap-2">
                 <input type="text" 
                     x-model="$store.threadUI.newNutContent"

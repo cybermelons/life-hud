@@ -40,12 +40,12 @@
 - [x] Extraction sequence on task completion
 - [x] Kama stats and progression
 
-#### Phase 4: UI Implementation (4 hours)
-- [ ] Responsive two-lane layout
-- [ ] Draggable always-visible NUT bar
-- [ ] Long-press klesha marking (150ms animations)
-- [ ] Drag-drop between queues
-- [ ] Mobile gesture support
+#### Phase 4: UI Implementation (4 hours) ✅
+- [x] Responsive two-lane layout
+- [x] Draggable always-visible NUT bar
+- [x] Long-press klesha marking (150ms animations)
+- [x] Drag-drop between queues
+- [x] Mobile gesture support
 
 #### Phase 5: Polish & Deploy (4 hours)
 - [ ] LocalStorage persistence
