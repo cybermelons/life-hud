@@ -3,141 +3,198 @@
 ## Current Status (Dec 27, 2024)
 
 ### ✅ Completed
-- **Architecture**: Modular store system with clean separation
-  - `thread-store.js` - Thread business logic
-  - `kama-store.js` - Game mechanics  
-  - `thread-ui-store.js` - UI state only
-- **Components**: Alpine.js components
-  - `thread-list.js` - Timeline view
-  - `kama-battle.js` - Two-lane battle interface
-- **UI**: `threads-v2.html` with drag-and-drop between lanes
-- **Design**: Complete game flow from NUT capture to extraction
-- **Documentation**: Implementation plan and game flow guide
+- **Architecture Design**: Clean data model separation
+  - Thread owns NUTs with `rootNutId` and `nutIds[]`
+  - Kama manages two queues partitioning thread NUTs
+  - Individual NUTs can be marked klesha
+  - "Tainted" is computed, not stored
+- **Documentation**: Complete data model architecture
+- **UI Design**: Two-lane interface (vertical mobile, side-by-side desktop)
 
-### 🚧 In Progress
-- Core state machine implementation
-- Klesha marking with animations
-- Root desire identification flow
+### 🚧 In Progress - Data Model Refactor
+- Fix store implementations to match new architecture
+- Separate Thread and Kama responsibilities
+- Implement klesha tracking system
 
-### 📋 Next Steps (3-Day Sprint)
+### 📋 Implementation Steps
 
-#### Day 1: Core State Machine
-- [ ] Thread auto-creation from temporal NUTs
-- [ ] Long-press detection for klesha marking
-- [ ] Corruption animation sequence
-- [ ] Root desire selection modal
-- [ ] State persistence to localStorage
+#### Phase 1: Fix Data Model (4 hours) ✅
+- [x] Refactor `thread-store.js` - Remove rootDesire/samskaraNuts
+- [x] Refactor `kama-store.js` - Own queues, not reference thread
+- [x] Add global klesha tracking Set
+- [x] Implement Thread-Kama 1:1 mapping
+- [x] Add invariant checking (queues = thread NUTs)
 
-#### Day 2: Battle Mechanics  
-- [ ] Samskara chain building (N→U→T)
-- [ ] Missing NUT type suggestions
-- [ ] Seal creation with ingredient preview
+#### Phase 2: Core Mechanics (6 hours)
+- [ ] NUT klesha marking (explicit)
+- [ ] Thread taint computation (derived)
+- [ ] View switching based on taint
+- [ ] Kama auto-creation for tainted threads
+- [ ] Queue management (klesha ↔ samskara)
+- [ ] Root desire identification on Kama
+
+#### Phase 3: Battle Flow (6 hours)
+- [ ] Samskara chain validation (N→U→T)
+- [ ] Seal creation from complete chain
 - [ ] Task generation from seal
-- [ ] Basic extraction sequence
+- [ ] Extraction sequence on task completion
+- [ ] Kama stats and progression
 
-#### Day 3: Polish & Deploy
-- [ ] Mobile gesture refinement
-- [ ] Visual animations and transitions
-- [ ] Onboarding tutorial flow
+#### Phase 4: UI Implementation (4 hours)
+- [ ] Responsive two-lane layout
+- [ ] Draggable always-visible NUT bar
+- [ ] Long-press klesha marking (150ms animations)
+- [ ] Drag-drop between queues
+- [ ] Mobile gesture support
+
+#### Phase 5: Polish & Deploy (4 hours)
+- [ ] LocalStorage persistence
+- [ ] Animation polish (150ms snappy)
 - [ ] End-to-end testing
 - [ ] Deploy to production
 
-## Architecture Overview
+## New Architecture Overview
 
-### Store Separation
-```
-Business Logic          UI State
---------------          --------
-thread-store.js    →    thread-ui-store.js
-kama-store.js      →    (selections, modals, drag state)
-app.js (NUTs)      →    
+### Data Model
+```typescript
+// Core NUT - Simple and extensible
+NUT = {
+  id: string,
+  text: string,
+  kind: 'note' | 'urge' | 'task',
+  timestamp: Date
+}
+
+// Global klesha marking
+nutIdIsKlesha: Set<string>
+
+// Thread owns NUTs
+Thread = {
+  id: string,
+  rootNutId: string,
+  nutIds: string[]  // SOURCE OF TRUTH
+}
+
+// Kama partitions Thread NUTs
+Kama = {
+  id: string,
+  threadId: string,  // 1:1 mapping
+  kleshaNutIds: string[],
+  samskaraNutIds: string[],
+  rootDesire?: DesireType,
+  state: KamaState
+}
+
+// Invariant: Set(klesha ∪ samskara) = Set(thread.nutIds)
 ```
 
-### Game Flow
+### View Logic
 ```
-1. NUT Capture → Auto-thread
-2. Long-press → Mark Klesha
-3. Identify Root Desire (5 Kamas)
-4. Build Samskara Chain (N→U→T)
-5. Create Seal → Generate Task
-6. Complete Task → EXTRACTION!
-7. Kama Satisfied → Wisdom Gained
+if (thread has klesha NUT) → Battle View with Kama
+else → Normal Thread View
+
+Battle View shows two queues:
+- Klesha Queue (problems)
+- Samskara Queue (solutions)
 ```
 
-### Two-Lane Battle Interface
+### Responsive Layout
 ```
-┌──────────────────────────┐
-│ ⚠️ KLESHA │ ✨ SAMSKARA  │
-│           │              │
-│ Corrupted │ Pure Chain   │
-│ NUTs      │ [N][U][T]    │
-│           │              │
-│ [Drag →]  │ [← Drop]     │
-└──────────────────────────┘
+Mobile (Vertical):          Desktop (Side-by-side):
+┌──────────────┐           ┌────────┬────────┐
+│   KLESHA     │           │ KLESHA │SAMSKARA│
+├──────────────┤           │        │        │
+│   SAMSKARA   │           │  NUTs  │  NUTs  │
+└──────────────┘           └────────┴────────┘
+    
+[═══ NUT Bar ═══]          [═══ NUT Bar ═══]
+  (draggable)                (draggable)
 ```
 
 ## Key Design Decisions
 
-### Why Two Lanes?
-- **Visual clarity**: Problem vs Solution
-- **Natural flow**: Corruption → Purification
-- **Mobile-friendly**: Swipe between lanes
-- **Game metaphor**: Battle arena
+### Clean Data Separation
+- **Thread owns NUTs**: Single source of truth for NUT ownership
+- **Kama partitions**: Two queues are just views of thread NUTs
+- **Klesha is explicit**: User marks individual NUTs as pain points
+- **Tainted is computed**: Thread view changes when contains klesha
 
-### Why Drag & Drop?
-- **Tactile satisfaction**: Physical movement = transformation
-- **Clear agency**: User actively builds solution
-- **Visual feedback**: See the chain building
-- **Undo-friendly**: Can drag back if wrong
+### Responsive UI Design
+- **Mobile-first**: Vertical lanes on mobile screens
+- **Desktop optimization**: Side-by-side lanes on wider screens
+- **Always-visible NUT bar**: Draggable but always accessible
+- **Snappy animations**: 150ms for responsive feel
 
-### Why 5 Kama Types?
-- **Manageable complexity**: Not overwhelming
-- **Covers core patterns**: Most desires fit these
-- **Collectible aspect**: "Gotta tame them all"
-- **Personality depth**: Each Kama feels unique
+### Game Mechanics
+- **5 Kama types**: Vishaya, Kirti, Bhoga, Aishvarya, Iccha
+- **N→U→T pattern**: Note→Urge→Task for complete samskara
+- **Seal creation**: Transform chain into actionable task
+- **Extraction climax**: Satisfying completion moment
 
 ## Technical Implementation
 
-### State Machine
+### State Management
 ```javascript
-const THREAD_STATES = {
-  fresh: 'fresh',
-  klesha: 'klesha',
-  identified: 'identified',
+// Global klesha tracking
+const kleshaSet = new Set();
+
+// Kama states (not thread states!)
+const KAMA_STATES = {
+  unidentified: 'unidentified',
+  identified: 'identified', 
   building: 'building',
   sealed: 'sealed',
   extracted: 'extracted'
 };
-```
 
-### Kama Types
-```javascript
-const KAMA_TYPES = {
-  vishaya: 'Sensory Craving',
-  kirti: 'Recognition Need',
-  bhoga: 'Comfort Seeking',
-  aishvarya: 'Control Desire',
-  iccha: 'Endless Wanting'
+// Desire types
+const DESIRE_TYPES = {
+  vishaya: 'Sensory pleasure',
+  kirti: 'Recognition/validation',
+  bhoga: 'Comfort/avoidance',
+  aishvarya: 'Power/control',
+  iccha: 'Endless craving'
 };
 ```
 
-### Extraction Rewards
-- **Immediate**: Satisfying animation
-- **Progress**: +1 Bond with Kama
-- **Collection**: Unlock totem at 5 extractions
-- **Narrative**: Story revelations
+### Key Functions to Implement
+```javascript
+// Mark NUT as klesha (explicit)
+function markNutKlesha(nutId) {
+  kleshaSet.add(nutId);
+  updateThreadView(getThreadForNut(nutId));
+}
+
+// Check if thread is tainted (computed)
+function isThreadTainted(thread) {
+  return thread.nutIds.some(id => kleshaSet.has(id));
+}
+
+// Ensure Kama exists for tainted thread
+function ensureKamaForThread(thread) {
+  if (!isThreadTainted(thread)) return null;
+  return kamaStore.getOrCreateKama(thread.id);
+}
+
+// Verify invariant
+function verifyKamaInvariant(kama, thread) {
+  const kamaSet = new Set([...kama.kleshaNutIds, ...kama.samskaraNutIds]);
+  const threadSet = new Set(thread.nutIds);
+  return kamaSet.size === threadSet.size;
+}
+```
 
 ## Files to Update
 
-### Core Files
-- `app.js` - Add thread creation triggers
-- `threads-v2.html` - Complete UI implementation
-- `worker.js` - Route to new threads page
+### Priority 1 - Core Refactor
+- `thread-store.js` - Remove rootDesire, samskaraNuts
+- `kama-store.js` - Manage own queues, not thread references
+- `app.js` - Add klesha tracking Set
 
-### New Files Needed
-- `components/seal-creator.js` - Seal creation modal
-- `components/tutorial.js` - Onboarding flow
-- `styles/animations.css` - Extraction animations
+### Priority 2 - New Features
+- `components/kama-battle.js` - Update for new data model
+- `threads-v2.html` - Responsive layout implementation
+- `components/nut-bar.js` - Always-visible draggable bar
 
 ## Testing Plan
 

@@ -12,6 +12,10 @@ document.addEventListener('alpine:init', () => {
             { id: 'iccha', name: 'Iccha', description: 'Endless craving - "Nothing is ever enough"' }
         ],
         
+        // Kamas mapped to threads (1:1 relationship)
+        kamas: {},
+        threadIdToKamaId: {},
+        
         // Kama collection stats
         kamaStats: {},
         
@@ -20,8 +24,61 @@ document.addEventListener('alpine:init', () => {
         
         // Initialize Kama store
         init() {
+            this.loadKamas();
             this.loadKamaStats();
             this.loadExtractions();
+        },
+        
+        // Save Kamas to localStorage
+        saveKamas() {
+            try {
+                localStorage.setItem('lilaya_kamas', JSON.stringify({
+                    kamas: this.kamas,
+                    threadIdToKamaId: this.threadIdToKamaId
+                }));
+            } catch (e) {
+                console.error('Failed to save Kamas:', e);
+            }
+        },
+        
+        // Load Kamas from localStorage
+        loadKamas() {
+            try {
+                const stored = localStorage.getItem('lilaya_kamas');
+                if (stored) {
+                    const data = JSON.parse(stored);
+                    this.kamas = data.kamas || {};
+                    this.threadIdToKamaId = data.threadIdToKamaId || {};
+                }
+            } catch (e) {
+                console.error('Failed to load Kamas:', e);
+                this.kamas = {};
+                this.threadIdToKamaId = {};
+            }
+        },
+        
+        // Verify that Kama queues exactly equal thread NUTs
+        verifyKamaInvariant(kama) {
+            const threadStore = Alpine.store('threads');
+            const thread = threadStore.getThread(kama.threadId);
+            if (!thread) return false;
+            
+            const kamaSet = new Set([...kama.kleshaNutIds, ...kama.samskaraNutIds]);
+            const threadSet = new Set(thread.nutIds);
+            
+            if (kamaSet.size !== threadSet.size) {
+                console.error("Kama queues don't match thread NUTs");
+                return false;
+            }
+            
+            for (const nutId of threadSet) {
+                if (!kamaSet.has(nutId)) {
+                    console.error(`Thread NUT ${nutId} missing from Kama queues`);
+                    return false;
+                }
+            }
+            
+            return true;
         },
         
         // Load Kama stats from localStorage
@@ -68,82 +125,109 @@ document.addEventListener('alpine:init', () => {
             }
         },
         
-        // Identify root desire for a thread
-        identifyRootDesire(threadId, desireId) {
+        // Get or create Kama for tainted thread
+        ensureKamaForThread(threadId) {
             const threadStore = Alpine.store('threads');
             const thread = threadStore.getThread(threadId);
+            if (!thread) return null;
+            
+            // Check if thread is tainted
+            if (!threadStore.isThreadTainted(threadId)) return null;
+            
+            // Check if Kama already exists
+            let kamaId = this.threadIdToKamaId[threadId];
+            if (kamaId) return this.kamas[kamaId];
+            
+            // Create new Kama with all NUTs in klesha queue initially
+            const kama = {
+                id: `kama_${Date.now()}`,
+                threadId: threadId,
+                kleshaNutIds: [...thread.nutIds],  // Start with all as problems
+                samskaraNutIds: [],                // Empty solution queue
+                rootDesire: null,
+                state: 'unidentified'
+            };
+            
+            this.kamas[kama.id] = kama;
+            this.threadIdToKamaId[threadId] = kama.id;
+            this.saveKamas();
+            
+            return kama;
+        },
+        
+        // Identify root desire for a Kama
+        identifyRootDesire(kamaId, desireId) {
+            const kama = this.kamas[kamaId];
             const desire = this.rootDesires.find(d => d.id === desireId);
             
-            if (thread && desire) {
-                thread.rootDesire = desire;
-                threadStore.saveThreads();
+            if (kama && desire) {
+                kama.rootDesire = desire;
+                kama.state = 'identified';
+                this.saveKamas();
                 return true;
             }
             return false;
         },
         
-        // Move NUT to samskara lane
-        moveToSamskara(nutId, threadId) {
-            const threadStore = Alpine.store('threads');
-            const appStore = Alpine.store('app');
-            const thread = threadStore.getThread(threadId);
-            const nut = appStore.nuts.find(n => n.id === nutId);
+        // Move NUT from klesha to samskara queue
+        moveToSamskara(kamaId, nutId) {
+            const kama = this.kamas[kamaId];
+            if (!kama) throw new Error("Kama not found");
+            if (!kama.rootDesire) throw new Error("Must identify root desire first");
             
-            if (thread && nut && thread.rootDesire) {
-                // Update NUT properties
-                nut.samskara = true;
-                nut.klesha = false;
+            // Remove from klesha queue
+            const index = kama.kleshaNutIds.indexOf(nutId);
+            if (index > -1) {
+                kama.kleshaNutIds.splice(index, 1);
                 
-                // Add to thread's samskara list
-                if (!thread.samskaraNuts) {
-                    thread.samskaraNuts = [];
-                }
-                if (!thread.samskaraNuts.includes(nutId)) {
-                    thread.samskaraNuts.push(nutId);
+                // Add to samskara queue if not already there
+                if (!kama.samskaraNutIds.includes(nutId)) {
+                    kama.samskaraNutIds.push(nutId);
                 }
                 
-                appStore.saveNuts();
-                threadStore.saveThreads();
+                // Update state if building
+                if (kama.state === 'identified') {
+                    kama.state = 'building';
+                }
+                
+                this.saveKamas();
+                this.verifyKamaInvariant(kama);
                 return true;
             }
             return false;
         },
         
-        // Move NUT back to klesha lane
-        moveToKlesha(nutId, threadId) {
-            const threadStore = Alpine.store('threads');
-            const appStore = Alpine.store('app');
-            const thread = threadStore.getThread(threadId);
-            const nut = appStore.nuts.find(n => n.id === nutId);
+        // Move NUT back to klesha queue
+        moveToKlesha(kamaId, nutId) {
+            const kama = this.kamas[kamaId];
+            if (!kama) throw new Error("Kama not found");
             
-            if (thread && nut) {
-                // Update NUT properties
-                nut.samskara = false;
-                nut.klesha = true;
+            // Remove from samskara queue
+            const index = kama.samskaraNutIds.indexOf(nutId);
+            if (index > -1) {
+                kama.samskaraNutIds.splice(index, 1);
                 
-                // Remove from samskara list
-                if (thread.samskaraNuts) {
-                    thread.samskaraNuts = thread.samskaraNuts.filter(id => id !== nutId);
+                // Add back to klesha queue if not already there
+                if (!kama.kleshaNutIds.includes(nutId)) {
+                    kama.kleshaNutIds.push(nutId);
                 }
                 
-                appStore.saveNuts();
-                threadStore.saveThreads();
+                this.saveKamas();
+                this.verifyKamaInvariant(kama);
                 return true;
             }
             return false;
         },
         
-        // Check if thread has complete samskara chain
-        hasCompleteSamskara(threadId) {
-            const threadStore = Alpine.store('threads');
+        // Check if Kama has complete samskara chain
+        hasCompleteSamskara(kamaId) {
+            const kama = this.kamas[kamaId];
+            if (!kama || kama.samskaraNutIds.length === 0) return false;
+            
             const appStore = Alpine.store('app');
-            const thread = threadStore.getThread(threadId);
-            
-            if (!thread || !thread.samskaraNuts) return false;
-            
-            const samskaraNuts = appStore.nuts.filter(n => 
-                thread.samskaraNuts.includes(n.id)
-            );
+            const samskaraNuts = kama.samskaraNutIds.map(id => 
+                appStore.nuts.find(n => n.id === id)
+            ).filter(Boolean);
             
             const types = samskaraNuts.map(n => n.type);
             return types.includes('note') && 
@@ -151,54 +235,53 @@ document.addEventListener('alpine:init', () => {
                    types.includes('task');
         },
         
-        // Get samskara nuts for a thread
-        getSamskaraNuts(threadId) {
-            const threadStore = Alpine.store('threads');
+        // Get samskara nuts for a Kama
+        getSamskaraNuts(kamaId) {
+            const kama = this.kamas[kamaId];
+            if (!kama) return [];
+            
             const appStore = Alpine.store('app');
-            const thread = threadStore.getThread(threadId);
-            
-            if (!thread || !thread.samskaraNuts) return [];
-            
-            return appStore.nuts.filter(n => 
-                thread.samskaraNuts.includes(n.id)
-            );
+            return kama.samskaraNutIds.map(id => 
+                appStore.nuts.find(n => n.id === id)
+            ).filter(Boolean);
         },
         
-        // Get klesha nuts for a thread
-        getKleshaNuts(threadId) {
-            const threadStore = Alpine.store('threads');
-            const nuts = threadStore.getThreadNuts(threadId);
-            return nuts.filter(n => n.klesha && !n.samskara);
+        // Get klesha nuts for a Kama
+        getKleshaNuts(kamaId) {
+            const kama = this.kamas[kamaId];
+            if (!kama) return [];
+            
+            const appStore = Alpine.store('app');
+            return kama.kleshaNutIds.map(id => 
+                appStore.nuts.find(n => n.id === id)
+            ).filter(Boolean);
         },
         
-        // Create seal for thread
-        createSeal(threadId) {
-            const threadStore = Alpine.store('threads');
-            const appStore = Alpine.store('app');
-            const thread = threadStore.getThread(threadId);
-            
-            if (!thread || !this.hasCompleteSamskara(threadId)) {
+        // Create seal for Kama
+        createSeal(kamaId) {
+            const kama = this.kamas[kamaId];
+            if (!kama || !this.hasCompleteSamskara(kamaId)) {
                 return { success: false, message: 'Incomplete samskara chain' };
             }
             
+            const appStore = Alpine.store('app');
+            
             // Find the task in samskara chain
-            const task = appStore.nuts.find(n => 
-                thread.samskaraNuts.includes(n.id) && 
-                n.type === 'task'
-            );
+            const task = this.getSamskaraNuts(kamaId).find(n => n.type === 'task');
             
             if (task) {
                 // Mark task as extraction trigger
                 task.extractionReady = true;
-                thread.sealCreated = true;
-                thread.sealTask = task.id;
+                kama.sealCreated = true;
+                kama.sealTask = task.id;
+                kama.state = 'sealed';
                 
                 appStore.saveNuts();
-                threadStore.saveThreads();
+                this.saveKamas();
                 
                 return { 
                     success: true, 
-                    message: `Seal created! Complete "${task.content}" to extract the ${thread.rootDesire.name} Kama.`,
+                    message: `Seal created! Complete "${task.content}" to extract the ${kama.rootDesire.name} Kama.`,
                     task: task
                 };
             }
@@ -208,7 +291,6 @@ document.addEventListener('alpine:init', () => {
         
         // Complete extraction
         completeExtraction(taskId) {
-            const threadStore = Alpine.store('threads');
             const appStore = Alpine.store('app');
             const task = appStore.nuts.find(n => n.id === taskId);
             
@@ -216,21 +298,21 @@ document.addEventListener('alpine:init', () => {
                 return { success: false, message: 'Task not ready for extraction' };
             }
             
-            const thread = threadStore.threads.find(t => 
-                t.sealTask === taskId
-            );
+            // Find Kama by seal task
+            const kama = Object.values(this.kamas).find(k => k.sealTask === taskId);
             
-            if (thread) {
-                // Mark thread as completed
-                thread.completed = true;
-                thread.completedAt = new Date().toISOString();
+            if (kama) {
+                // Mark Kama as extracted
+                kama.state = 'extracted';
+                kama.completedAt = new Date().toISOString();
                 
                 // Track extraction
                 const extraction = {
                     id: Date.now().toString(),
-                    threadId: thread.id,
-                    kamaType: thread.rootDesire.id,
-                    kamaName: thread.rootDesire.name,
+                    kamaId: kama.id,
+                    threadId: kama.threadId,
+                    kamaType: kama.rootDesire.id,
+                    kamaName: kama.rootDesire.name,
                     extractedAt: new Date().toISOString()
                 };
                 
@@ -238,22 +320,31 @@ document.addEventListener('alpine:init', () => {
                 this.saveExtractions();
                 
                 // Update Kama stats
-                this.updateKamaStats(thread.rootDesire.id);
+                this.updateKamaStats(kama.rootDesire.id);
                 
                 // Mark task as completed
                 task.completed = true;
                 
-                threadStore.saveThreads();
+                // Mark thread as completed
+                const threadStore = Alpine.store('threads');
+                const thread = threadStore.getThread(kama.threadId);
+                if (thread) {
+                    thread.completed = true;
+                    thread.completedAt = new Date().toISOString();
+                    threadStore.saveThreads();
+                }
+                
+                this.saveKamas();
                 appStore.saveNuts();
                 
                 return {
                     success: true,
-                    message: `${thread.rootDesire.name} Kama has been satisfied!`,
+                    message: `${kama.rootDesire.name} Kama has been satisfied!`,
                     extraction: extraction
                 };
             }
             
-            return { success: false, message: 'Thread not found' };
+            return { success: false, message: 'Kama not found' };
         },
         
         // Update Kama stats after extraction

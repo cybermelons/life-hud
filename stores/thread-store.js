@@ -49,10 +49,8 @@ document.addEventListener('alpine:init', () => {
         createThread(nutIds = []) {
             const thread = {
                 id: Date.now().toString(),
+                rootNutId: nutIds[0] || null,  // First NUT is root by default
                 nutIds: nutIds,
-                klesha: false,
-                rootDesire: null,
-                samskaraNuts: [],
                 createdAt: new Date().toISOString(),
                 completed: false
             };
@@ -92,23 +90,23 @@ document.addEventListener('alpine:init', () => {
             }
         },
         
-        // Mark thread as klesha
-        markThreadKlesha(threadId) {
+        // Set root NUT for thread
+        setRootNut(threadId, nutId) {
             const thread = this.getThread(threadId);
-            if (thread) {
-                thread.klesha = true;
-                
-                // Mark all NUTs in thread as klesha
-                const appStore = Alpine.store('app');
-                appStore.nuts.forEach(nut => {
-                    if (nut.threadId === threadId) {
-                        nut.klesha = true;
-                    }
-                });
-                
+            if (thread && thread.nutIds.includes(nutId)) {
+                thread.rootNutId = nutId;
                 this.saveThreads();
-                appStore.saveNuts();
             }
+        },
+        
+        // Check if thread is tainted (contains klesha NUT)
+        isThreadTainted(threadId) {
+            const thread = this.getThread(threadId);
+            if (!thread) return false;
+            
+            const appStore = Alpine.store('app');
+            // Thread is tainted if ANY of its NUTs are klesha
+            return thread.nutIds.some(nutId => appStore.isNutKlesha(nutId));
         },
         
         // Auto-create threads from temporal proximity
@@ -170,8 +168,6 @@ document.addEventListener('alpine:init', () => {
             appStore.nuts.forEach(nut => {
                 if (nut.threadId === threadId) {
                     nut.threadId = null;
-                    nut.klesha = false;
-                    nut.samskara = false;
                 }
             });
             

@@ -12,6 +12,7 @@ document.addEventListener('alpine:init', () => {
     Alpine.store('app', {
         // State
         nuts: [],
+        kleshaSet: new Set(),  // Global tracking of klesha NUTs
         captureOpen: false,
         nutType: 'note',
         nutContent: '',
@@ -28,6 +29,7 @@ document.addEventListener('alpine:init', () => {
         init() {
             // Load from localStorage
             this.loadNuts();
+            this.loadKleshaSet();
             
             // Check for auth errors in URL
             const urlParams = new URLSearchParams(window.location.search);
@@ -349,6 +351,58 @@ document.addEventListener('alpine:init', () => {
             } catch (e) {
                 console.error('Failed to save NUTs:', e);
             }
+        },
+        
+        // Load klesha set from localStorage
+        loadKleshaSet() {
+            try {
+                const stored = localStorage.getItem('lilaya_klesha_set');
+                if (stored) {
+                    this.kleshaSet = new Set(JSON.parse(stored));
+                }
+            } catch (e) {
+                console.error('Failed to load klesha set:', e);
+                this.kleshaSet = new Set();
+            }
+        },
+        
+        // Save klesha set to localStorage
+        saveKleshaSet() {
+            try {
+                localStorage.setItem('lilaya_klesha_set', JSON.stringify(Array.from(this.kleshaSet)));
+            } catch (e) {
+                console.error('Failed to save klesha set:', e);
+            }
+        },
+        
+        // Mark NUT as klesha
+        markNutKlesha(nutId) {
+            this.kleshaSet.add(nutId);
+            this.saveKleshaSet();
+            
+            // Check if thread view needs updating
+            const threadStore = Alpine.store('threads');
+            if (threadStore) {
+                const thread = threadStore.threads.find(t => t.nutIds.includes(nutId));
+                if (thread) {
+                    // Ensure Kama exists for tainted thread
+                    const kamaStore = Alpine.store('kama');
+                    if (kamaStore) {
+                        kamaStore.ensureKamaForThread(thread.id);
+                    }
+                }
+            }
+        },
+        
+        // Unmark NUT as klesha
+        unmarkNutKlesha(nutId) {
+            this.kleshaSet.delete(nutId);
+            this.saveKleshaSet();
+        },
+        
+        // Check if NUT is klesha
+        isNutKlesha(nutId) {
+            return this.kleshaSet.has(nutId);
         },
         
         // Add a new NUT
